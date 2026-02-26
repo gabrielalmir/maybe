@@ -22,7 +22,8 @@
             "name": "Gabriel Almir"
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "require": {
         "php": ">=7.4"
     },
