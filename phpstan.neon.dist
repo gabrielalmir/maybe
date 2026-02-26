@@ -1,0 +1,8 @@
+parameters:
+    level: 6
+    paths:
+        - src
+    inferPrivatePropertyTypeFromConstructor: true
+    treatPhpDocTypesAsCertain: true
+    parallel:
+        maximumNumberOfProcesses: 1
