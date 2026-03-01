@@ -225,6 +225,7 @@ See runnable examples in:
 
 - `examples/option-result.php`
 - `examples/schema-dto.php`
+- `examples/schema-dto-all.php` (DTO using all schema builders)
 - `examples/schema-array-object.php`
 - `examples/helpers.php`
 - `examples/schema-parse-throw.php`
