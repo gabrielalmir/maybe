@@ -29,23 +29,24 @@ declare(strict_types=1);
 use Maybe\Option\Option;
 use Maybe\Result\Result;
 
-$name = Option::fromNullable('  gabriel  ')
+$customerName = Option::fromNullable('  Ana Souza  ')
     ->map('trim')
-    ->map('strtoupper')
-    ->unwrapOr('GUEST');
+    ->flatMap(static function (string $value): Option {
+        return $value === '' ? Option::none() : Option::some($value);
+    })
+    ->unwrapOr('Cliente');
 
-$division = static function (int $a, int $b): Result {
-    if ($b === 0) {
-        return Result::err('division_by_zero');
+$authorizePayment = static function (int $amountInCents, string $method): Result {
+    if ($method !== 'credit_card') {
+        return Result::err('Forma de pagamento não suportada');
     }
 
-    return Result::ok($a / $b);
+    return Result::ok('pay_' . substr(sha1((string) $amountInCents), 0, 8));
 };
 
-echo $name . PHP_EOL; // GABRIEL
-echo $division(10, 2)->match(
-    static fn (float $value): string => "OK: {$value}",
-    static fn (string $error): string => "ERR: {$error}"
+echo $authorizePayment(12990, 'credit_card')->match(
+    static fn (string $transactionId): string => $customerName . ' - pagamento: ' . $transactionId,
+    static fn (string $error): string => 'Error: ' . $error
 ) . PHP_EOL;
 ```
 
@@ -146,42 +147,60 @@ Extend `Maybe\DTO\DTO` to validate raw payloads and create typed objects in one 
 
 ```php
 use Maybe\DTO\DTO;
+use Maybe\Option\Option;
 use Maybe\Schema\ObjectSchema;
 use Maybe\Schema\Schema;
 
-final class AccountDTO extends DTO
+final class CustomerRegistrationDTO extends DTO
 {
+    /** @var string */
+    public $fullName;
+
     /** @var string */
     public $email;
 
     /** @var int */
-    public $age;
+    public $birthYear;
 
-    private function __construct(string $email, int $age)
+    /** @var Option<string> */
+    public $phoneNumber;
+
+    private function __construct(string $fullName, string $email, int $birthYear, Option $phoneNumber)
     {
+        $this->fullName = $fullName;
         $this->email = $email;
-        $this->age = $age;
+        $this->birthYear = $birthYear;
+        $this->phoneNumber = $phoneNumber;
     }
 
     public static function schema(): ObjectSchema
     {
         return Schema::shape([
-            'email' => Schema::string()->trimmed()->min(5),
-            'age' => Schema::int()->min(18),
+            'full_name' => Schema::string()->trimmed()->min(5),
+            'email' => Schema::string()->trimmed()->regex('/^[^@\s]+@[^@\s]+\.[^@\s]+$/'),
+            'birth_year' => Schema::int()->min(1900)->max(2010),
+            'phone_number' => Schema::option(
+                Schema::string()->trimmed()->regex('/^\+?[0-9]{10,15}$/')
+            ),
         ]);
     }
 
     protected static function fromValidated(array $validated)
     {
-        return new self($validated['email'], $validated['age']);
+        return new self(
+            $validated['full_name'],
+            $validated['email'],
+            $validated['birth_year'],
+            $validated['phone_number']
+        );
     }
 }
 ```
 
 DTO entry points:
 
-- `AccountDTO::fromArray($input)` -> `Result<AccountDTO, ValidationErrorBag>`
-- `AccountDTO::parse($input)` -> throws on validation failure
+- `CustomerRegistrationDTO::fromArray($input)` -> `Result<CustomerRegistrationDTO, ValidationErrorBag>`
+- `CustomerRegistrationDTO::parse($input)` -> throws on validation failure
 
 ## Functional Helpers
 
@@ -204,6 +223,9 @@ See runnable examples in:
 
 - `examples/option-result.php`
 - `examples/schema-dto.php`
+- `examples/schema-array-object.php`
+- `examples/helpers.php`
+- `examples/schema-parse-throw.php`
 
 ## License
 
