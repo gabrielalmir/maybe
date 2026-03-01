@@ -84,6 +84,14 @@ function boolSchema()
 }
 
 /**
+ * @return \Maybe\Schema\DateSchema
+ */
+function dateSchema()
+{
+    return Schema::date();
+}
+
+/**
  * @template T
  * @param SchemaInterface<T> $itemSchema
  * @return \Maybe\Schema\ArraySchema<T>

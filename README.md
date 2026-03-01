@@ -132,6 +132,7 @@ Available builders:
 - `Schema::string()` (`trimmed()`, `min()`, `max()`, `regex()`)
 - `Schema::int()` (`min()`, `max()`)
 - `Schema::bool()`
+- `Schema::date()` (`format()`, `min()`, `max()`) -> `DateTimeImmutable`
 - `Schema::arrayOf(...)`
 - `Schema::shape([...])` (`allowUnknown()`)
 - `Schema::option(...)` for nullable values into `Option<T>`
@@ -209,6 +210,7 @@ Global helper functions are autoloaded from `src/functions.php`:
 - `some()`, `none()`, `fromNullable()`
 - `ok()`, `err()`
 - `stringSchema()`, `intSchema()`, `boolSchema()`
+- `dateSchema()`
 - `arraySchema()`, `objectSchema()`, `optionSchema()`
 
 ## Development

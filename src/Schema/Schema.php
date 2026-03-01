@@ -31,6 +31,14 @@ final class Schema
     }
 
     /**
+     * @return DateSchema
+     */
+    public static function date(): DateSchema
+    {
+        return new DateSchema();
+    }
+
+    /**
      * @template T
      * @param SchemaInterface<T> $itemSchema
      * @return ArraySchema<T>
@@ -59,4 +67,3 @@ final class Schema
         return new OptionSchema($inner);
     }
 }
-
