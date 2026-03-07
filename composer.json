@@ -2,14 +2,19 @@
     "name": "gabrielalmir/maybe",
     "description": "Functional primitives for PHP: Option and Result types inspired by Rust",
     "type": "library",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Maybe\\": "src/"
         },
+        "classmap": [
+            "src/Async.php",
+            "src/Async_future.php"
+        ],
         "files": [
-            "src/functions.php"
+            "src/functions.php",
+            "src/async_helpers.php"
         ]
     },
     "autoload-dev": {
@@ -25,7 +30,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=7.4"
+        "php": ">=7.4",
+        "opis/closure": "^3.7"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.12",
@@ -34,6 +40,7 @@
     "scripts": {
         "lint": "phpstan analyse --memory-limit=1G --no-progress --debug",
         "test": "pest --configuration phpunit.xml.dist",
+        "test:async": "php -d error_reporting='E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED' tests/Async/run.php",
         "qa": [
             "@guard",
             "@lint",

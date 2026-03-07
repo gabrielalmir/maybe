@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Maybe;
 
+use Maybe\Async\Async;
+use Maybe\Async\AsyncFuture;
 use Maybe\Option\Option;
 use Maybe\Result\Result;
 use Maybe\Schema\ObjectSchema;
@@ -128,4 +130,30 @@ function objectSchema(array $shape): ObjectSchema
 function optionSchema(SchemaInterface $inner): OptionSchema
 {
     return Schema::option($inner);
+}
+
+/**
+ * @param array<int,mixed> $args
+ * @param array<string,mixed> $options
+ */
+function async(callable $task, array $args = [], array $options = []): AsyncFuture
+{
+    return Async::run($task, $args, $options);
+}
+
+/**
+ * @param mixed|AsyncFuture|array<mixed,AsyncFuture|mixed> $value
+ * @return mixed
+ */
+function await($value)
+{
+    if ($value instanceof AsyncFuture) {
+        return $value->resolve();
+    }
+
+    if (is_array($value)) {
+        return Async::all($value);
+    }
+
+    return $value;
 }

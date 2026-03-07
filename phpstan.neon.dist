@@ -2,6 +2,8 @@ parameters:
     level: 6
     paths:
         - src
+    scanFiles:
+        - vendor/opis/closure/src/SerializableClosure.php
     inferPrivatePropertyTypeFromConstructor: true
     treatPhpDocTypesAsCertain: true
     parallel:

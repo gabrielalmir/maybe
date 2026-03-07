@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php"
          colors="true"
+         convertDeprecationsToExceptions="false"
          failOnRisky="true"
          failOnWarning="true">
+    <php>
+        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED &amp; ~E_USER_DEPRECATED"/>
+    </php>
     <testsuites>
         <testsuite name="maybe">
             <directory>tests</directory>
