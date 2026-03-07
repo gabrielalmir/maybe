@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Maybe\Async;
 
-use Opis\Closure\SerializableClosure;
 use Throwable;
 
 final class WorkerRuntime
@@ -14,8 +13,6 @@ final class WorkerRuntime
         if ($autoloadFile !== null && $autoloadFile !== '' && is_file($autoloadFile)) {
             require_once $autoloadFile;
         }
-
-        self::ensureOpisClosureLoaded();
 
         $result = [
             'ok' => false,
@@ -28,16 +25,25 @@ final class WorkerRuntime
         ];
 
         try {
-            /** @var array{task:string,args:string} $payload */
+            /** @var array{kind?:string,task:string,args:string} $payload */
             $payload = require $inputFile;
 
-            /** @var mixed $taskPayload */
-            $taskPayload = unserialize($payload['task']);
-            if (!$taskPayload instanceof SerializableClosure) {
-                throw new \RuntimeException('Invalid serialized task payload');
+            $kind = isset($payload['kind']) ? (string) $payload['kind'] : 'closure';
+
+            if ($kind === 'closure') {
+                self::ensureOpisClosureLoaded();
+                /** @var callable $task */
+                $task = \Opis\Closure\unserialize($payload['task']);
+            } else {
+                /** @var mixed $callable */
+                $callable = unserialize($payload['task']);
+                if (!is_callable($callable)) {
+                    throw new \RuntimeException('Task payload is not callable');
+                }
+
+                $task = $callable;
             }
 
-            $task = $taskPayload->getClosure();
             /** @var array<int,mixed> $args */
             $args = unserialize($payload['args']);
 

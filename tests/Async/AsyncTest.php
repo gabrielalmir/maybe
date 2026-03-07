@@ -6,29 +6,18 @@ use Maybe\Async\Async;
 use Maybe\Async\Exception\CancelledException;
 use Maybe\Async\Exception\TaskFailedException;
 use Maybe\Async\Exception\TimeoutException;
+use Maybe\Tests\Async\TestTasks;
 
 it('runs a callable asynchronously and resolves value', function (): void {
-    $value = await(async(static function (): int {
-        usleep(120000);
-
-        return 42;
-    }));
+    $value = Async::run([TestTasks::class, 'sleepAndReturnInt'], [120000, 42])->resolve();
 
     expect($value)->toBe(42);
 });
 
 it('await array resolves multiple futures preserving keys', function (): void {
-    $result = await([
-        'a' => async(static function (): string {
-            usleep(150000);
-
-            return 'A';
-        }),
-        'b' => async(static function (): string {
-            usleep(40000);
-
-            return 'B';
-        }),
+    $result = Async::all([
+        'a' => Async::run([TestTasks::class, 'sleepAndReturnString'], [150000, 'A']),
+        'b' => Async::run([TestTasks::class, 'sleepAndReturnString'], [40000, 'B']),
     ]);
 
     expect($result)->toBe(['a' => 'A', 'b' => 'B']);
@@ -37,16 +26,14 @@ it('await array resolves multiple futures preserving keys', function (): void {
 it('supports then/catch/finally chaining', function (): void {
     $finallyCalled = false;
 
-    $result = async(static function (): int {
-        return 5;
-    })
+    $result = Async::run([TestTasks::class, 'returnFive'])
         ->then(static function (int $value): int {
             return $value * 2;
         })
         ->then(static function (int $value): int {
             return $value + 1;
         })
-        ->catch(static function (Throwable $e): int {
+        ->catch(static function (\Throwable $e): int {
             return 0;
         })
         ->finally(static function () use (&$finallyCalled): void {
@@ -54,14 +41,12 @@ it('supports then/catch/finally chaining', function (): void {
         })
         ->resolve();
 
-    expect($result)->toBe(11)
-        ->and($finallyCalled)->toBeTrue();
+    expect($result)->toBe(11);
+    expect($finallyCalled)->toBeTrue();
 });
 
 it('propagates worker exceptions as TaskFailedException', function (): void {
-    $future = async(static function (): void {
-        throw new RuntimeException('boom');
-    });
+    $future = Async::run([TestTasks::class, 'throwBoom']);
 
     expect(fn () => $future->resolve())
         ->toThrow(TaskFailedException::class, 'boom');
@@ -69,16 +54,8 @@ it('propagates worker exceptions as TaskFailedException', function (): void {
 
 it('returns fastest task on race and cancels others', function (): void {
     $winner = Async::race([
-        'slow' => async(static function (): string {
-            usleep(250000);
-
-            return 'slow';
-        }),
-        'fast' => async(static function (): string {
-            usleep(50000);
-
-            return 'fast';
-        }),
+        'slow' => Async::run([TestTasks::class, 'sleepAndReturnString'], [250000, 'slow']),
+        'fast' => Async::run([TestTasks::class, 'sleepAndReturnString'], [50000, 'fast']),
     ]);
 
     expect($winner)->toBe('fast');
@@ -86,42 +63,22 @@ it('returns fastest task on race and cancels others', function (): void {
 
 it('limits concurrency in pool and returns ordered results', function (): void {
     $tasks = [
-        static function (): int {
-            usleep(120000);
-
-            return 1;
-        },
-        static function (): int {
-            usleep(120000);
-
-            return 2;
-        },
-        static function (): int {
-            usleep(120000);
-
-            return 3;
-        },
-        static function (): int {
-            usleep(120000);
-
-            return 4;
-        },
+        [[TestTasks::class, 'sleepAndReturnInt'], [120000, 1]],
+        [[TestTasks::class, 'sleepAndReturnInt'], [120000, 2]],
+        [[TestTasks::class, 'sleepAndReturnInt'], [120000, 3]],
+        [[TestTasks::class, 'sleepAndReturnInt'], [120000, 4]],
     ];
 
     $started = microtime(true);
     $result = Async::pool($tasks, 2);
     $elapsed = microtime(true) - $started;
 
-    expect($result)->toBe([1, 2, 3, 4])
-        ->and($elapsed)->toBeGreaterThan(0.18);
+    expect($result)->toBe([1, 2, 3, 4]);
+    expect($elapsed)->toBeGreaterThan(0.18);
 });
 
 it('supports non-blocking pending and explicit resolve', function (): void {
-    $future = async(static function (): string {
-        usleep(100000);
-
-        return 'done';
-    });
+    $future = Async::run([TestTasks::class, 'sleepAndReturnString'], [100000, 'done']);
 
     $spins = 0;
     while ($future->pending()) {
@@ -129,16 +86,12 @@ it('supports non-blocking pending and explicit resolve', function (): void {
         usleep(5000);
     }
 
-    expect($future->resolve())->toBe('done')
-        ->and($spins)->toBeGreaterThan(0);
+    expect($future->resolve())->toBe('done');
+    expect($spins)->toBeGreaterThan(0);
 });
 
 it('cancels a running task', function (): void {
-    $future = async(static function (): string {
-        usleep(300000);
-
-        return 'never';
-    });
+    $future = Async::run([TestTasks::class, 'sleepAndReturnString'], [300000, 'never']);
 
     usleep(50000);
     $future->cancel();
@@ -148,11 +101,7 @@ it('cancels a running task', function (): void {
 });
 
 it('times out a task and throws TimeoutException', function (): void {
-    $future = async(static function (): string {
-        usleep(300000);
-
-        return 'late';
-    }, [], ['timeout' => 0.05]);
+    $future = Async::run([TestTasks::class, 'sleepAndReturnString'], [300000, 'late'], ['timeout' => 0.05]);
 
     expect(fn () => $future->resolve())
         ->toThrow(TimeoutException::class);
@@ -165,9 +114,7 @@ it('cleans up temporary files after resolve', function (): void {
         mkdir($tempDir, 0777, true);
     }
 
-    $value = await(async(static function (): int {
-        return 7;
-    }, [], ['temp_dir' => $tempDir]));
+    $value = Async::run([TestTasks::class, 'sleepAndReturnInt'], [0, 7], ['temp_dir' => $tempDir])->resolve();
 
     $files = glob($tempDir . DIRECTORY_SEPARATOR . '*');
     if ($files === false) {

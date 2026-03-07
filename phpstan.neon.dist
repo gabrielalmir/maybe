@@ -3,6 +3,7 @@ parameters:
     paths:
         - src
     scanFiles:
+        - vendor/opis/closure/functions.php
         - vendor/opis/closure/src/SerializableClosure.php
     inferPrivatePropertyTypeFromConstructor: true
     treatPhpDocTypesAsCertain: true

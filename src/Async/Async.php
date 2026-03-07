@@ -6,7 +6,6 @@ namespace Maybe\Async;
 
 use Closure;
 use Maybe\Async\Exception\TaskFailedException;
-use Opis\Closure\SerializableClosure;
 use RuntimeException;
 
 class Async
@@ -26,8 +25,6 @@ class Async
      */
     public static function run(callable $task, array $args = [], array $options = []): AsyncFuture
     {
-        self::ensureOpisClosureLoaded();
-
         $id = self::makeId();
         $tempDir = isset($options['temp_dir']) ? (string) $options['temp_dir'] : self::tempDir();
 
@@ -39,12 +36,21 @@ class Async
         $outputFile = $tempDir . DIRECTORY_SEPARATOR . $id . '_output.json';
         $workerFile = $tempDir . DIRECTORY_SEPARATOR . $id . '_worker.php';
 
-        $closure = $task instanceof Closure ? $task : Closure::fromCallable($task);
+        $payloadData = [
+            'kind' => 'callable',
+            'task' => '',
+            'args' => serialize($args),
+        ];
 
-        $payload = "<?php\n\nreturn [\n"
-            . "    'task' => " . var_export(serialize(new SerializableClosure($closure)), true) . ",\n"
-            . "    'args' => " . var_export(serialize($args), true) . ",\n"
-            . "];\n";
+        if ($task instanceof Closure) {
+            self::ensureOpisClosureLoaded();
+            $payloadData['kind'] = 'closure';
+            $payloadData['task'] = \Opis\Closure\serialize($task);
+        } else {
+            $payloadData['task'] = serialize($task);
+        }
+
+        $payload = "<?php\n\nreturn " . var_export($payloadData, true) . ";\n";
 
         if (file_put_contents($inputFile, $payload, LOCK_EX) === false) {
             throw new RuntimeException('Failed to write async input file: ' . $inputFile);
