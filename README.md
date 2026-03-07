@@ -197,3 +197,14 @@ composer test:async
 ```
 
 > Note: the legacy `test` runner uses Pest 1.x. On very new PHP versions, prefer `test:async` to validate the async module.
+
+## Async Examples
+
+Run the examples directly:
+
+```bash
+php examples/async-basic.php
+php examples/async-all-race.php
+php examples/async-pool.php
+php examples/async-chain-timeout-cancel.php
+```
