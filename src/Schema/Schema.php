@@ -40,6 +40,16 @@ final class Schema
 
     /**
      * @template T
+     * @param array<int,T> $allowedValues
+     * @return EnumSchema<T>
+     */
+    public static function enumeration(array $allowedValues): EnumSchema
+    {
+        return new EnumSchema($allowedValues);
+    }
+
+    /**
+     * @template T
      * @param SchemaInterface<T> $itemSchema
      * @return ArraySchema<T>
      */

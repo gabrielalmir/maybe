@@ -70,3 +70,28 @@ it('returns err for invalid date format or bounds', function (): void {
     Assert::assertSame('date.min', $earlyErrors->first()->code());
     Assert::assertSame('date.max', $lateErrors->first()->code());
 });
+
+it('parses valid values with enumeration schema', function (): void {
+    $schema = Schema::enumeration(['pending', 'paid', 'failed']);
+
+    Assert::assertSame('paid', $schema->parse('paid'));
+});
+
+it('returns err for invalid enumeration value', function (): void {
+    $schema = Schema::enumeration(['pending', 'paid', 'failed']);
+    $result = $schema->safeParse('processing');
+
+    $errors = $result->match(
+        static fn ($value): ?ValidationErrorBag => null,
+        static fn (ValidationErrorBag $errors): ValidationErrorBag => $errors
+    );
+
+    Assert::assertInstanceOf(ValidationErrorBag::class, $errors);
+    Assert::assertSame('enum.invalid', $errors->first()->code());
+});
+
+it('throws when enumeration schema is created with empty values', function (): void {
+    $this->expectException(\InvalidArgumentException::class);
+
+    Schema::enumeration([]);
+});

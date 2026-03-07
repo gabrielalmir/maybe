@@ -24,6 +24,9 @@ final class OrderImportDTO extends DTO
     /** @var bool */
     public $paid;
 
+    /** @var string */
+    public $status;
+
     /** @var array<int,string> */
     public $tags;
 
@@ -42,6 +45,7 @@ final class OrderImportDTO extends DTO
         \DateTimeImmutable $createdAt,
         int $itemCount,
         bool $paid,
+        string $status,
         array $tags,
         array $shippingAddress,
         Option $couponCode
@@ -50,6 +54,7 @@ final class OrderImportDTO extends DTO
         $this->createdAt = $createdAt;
         $this->itemCount = $itemCount;
         $this->paid = $paid;
+        $this->status = $status;
         $this->tags = $tags;
         $this->shippingAddress = $shippingAddress;
         $this->couponCode = $couponCode;
@@ -64,6 +69,7 @@ final class OrderImportDTO extends DTO
                 ->max(new \DateTimeImmutable('2030-12-31')),
             'item_count' => Schema::int()->min(1)->max(999),
             'paid' => Schema::bool(),
+            'status' => Schema::enumeration(['pending', 'paid', 'failed']),
             'tags' => Schema::arrayOf(Schema::string()->trimmed()->min(2)),
             'shipping_address' => Schema::shape([
                 'street' => Schema::string()->trimmed()->min(5),
@@ -83,6 +89,7 @@ final class OrderImportDTO extends DTO
             $validated['created_at'],
             $validated['item_count'],
             $validated['paid'],
+            $validated['status'],
             $validated['tags'],
             $validated['shipping_address'],
             $validated['coupon_code']
@@ -97,6 +104,7 @@ foreach (
             'created_at' => '2026-02-28',
             'item_count' => 3,
             'paid' => true,
+            'status' => 'paid',
             'tags' => ['express', 'b2b'],
             'shipping_address' => [
                 'street' => 'Av. Paulista, 1000',
@@ -110,6 +118,7 @@ foreach (
             'created_at' => '2019-05-01',
             'item_count' => 0,
             'paid' => 'yes',
+            'status' => 'processing',
             'tags' => ['x'],
             'shipping_address' => [
                 'street' => 'Rua',

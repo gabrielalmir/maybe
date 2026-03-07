@@ -93,6 +93,16 @@ function dateSchema()
 
 /**
  * @template T
+ * @param array<int,T> $allowedValues
+ * @return \Maybe\Schema\EnumSchema<T>
+ */
+function enumSchema(array $allowedValues)
+{
+    return Schema::enumeration($allowedValues);
+}
+
+/**
+ * @template T
  * @param SchemaInterface<T> $itemSchema
  * @return \Maybe\Schema\ArraySchema<T>
  */
