@@ -36,7 +36,7 @@ final class WorkerRuntime
                 $task = \Opis\Closure\unserialize($payload['task']);
             } else {
                 /** @var mixed $callable */
-                $callable = unserialize($payload['task']);
+                $callable = unserialize($payload['task'], ['allowed_classes' => true]);
                 if (!is_callable($callable)) {
                     throw new \RuntimeException('Task payload is not callable');
                 }
@@ -45,7 +45,10 @@ final class WorkerRuntime
             }
 
             /** @var array<int,mixed> $args */
-            $args = unserialize($payload['args']);
+            $args = unserialize($payload['args'], ['allowed_classes' => true]);
+            if (!is_array($args)) {
+                throw new \RuntimeException('Task args payload must be an array');
+            }
 
             $value = $task(...$args);
 
