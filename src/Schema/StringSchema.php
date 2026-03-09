@@ -71,7 +71,9 @@ final class StringSchema extends AbstractSchema
 
         $value = $this->trim ? trim($input) : $input;
 
-        if ($this->minLength !== null && strlen($value) < $this->minLength) {
+        $length = $this->length($value);
+
+        if ($this->minLength !== null && $length < $this->minLength) {
             throw new ValidationException(
                 ValidationErrorBag::single(
                     new ValidationError('$', sprintf('String must have at least %d characters', $this->minLength), 'string.min')
@@ -79,7 +81,7 @@ final class StringSchema extends AbstractSchema
             );
         }
 
-        if ($this->maxLength !== null && strlen($value) > $this->maxLength) {
+        if ($this->maxLength !== null && $length > $this->maxLength) {
             throw new ValidationException(
                 ValidationErrorBag::single(
                     new ValidationError('$', sprintf('String must have at most %d characters', $this->maxLength), 'string.max')
@@ -87,13 +89,31 @@ final class StringSchema extends AbstractSchema
             );
         }
 
-        if ($this->pattern !== null && preg_match($this->pattern, $value) !== 1) {
-            throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'String does not match expected format', 'string.pattern'))
-            );
+        if ($this->pattern !== null) {
+            $matched = preg_match($this->pattern, $value);
+
+            if ($matched === false) {
+                throw new ValidationException(
+                    ValidationErrorBag::single(new ValidationError('$', 'Invalid regex pattern in schema', 'string.pattern.invalid'))
+                );
+            }
+
+            if ($matched !== 1) {
+                throw new ValidationException(
+                    ValidationErrorBag::single(new ValidationError('$', 'String does not match expected format', 'string.pattern'))
+                );
+            }
         }
 
         return $value;
     }
-}
 
+    private function length(string $value): int
+    {
+        if (function_exists('mb_strlen')) {
+            return mb_strlen($value, 'UTF-8');
+        }
+
+        return strlen($value);
+    }
+}

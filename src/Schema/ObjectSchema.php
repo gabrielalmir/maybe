@@ -50,7 +50,7 @@ final class ObjectSchema extends AbstractSchema
 
         foreach ($this->shape as $key => $schema) {
             if (!array_key_exists($key, $input)) {
-                $errors = $errors->withError(new ValidationError($key, 'Missing required field', 'object.missing'));
+                $errors = $errors->withError(new ValidationError('$.' . $key, 'Missing required field', 'object.missing'));
                 continue;
             }
 
@@ -73,7 +73,7 @@ final class ObjectSchema extends AbstractSchema
             foreach ($input as $key => $value) {
                 if (!array_key_exists((string) $key, $this->shape)) {
                     $errors = $errors->withError(
-                        new ValidationError((string) $key, 'Unknown field is not allowed', 'object.unknown')
+                        new ValidationError('$.' . (string) $key, 'Unknown field is not allowed', 'object.unknown')
                     );
                 }
             }
@@ -95,9 +95,9 @@ final class ObjectSchema extends AbstractSchema
     private function composePath(string $field, string $path): string
     {
         if ($path === '$') {
-            return $field;
+            return '$.' . $field;
         }
 
-        return $field . '.' . ltrim($path, '$.');
+        return '$.' . $field . '.' . ltrim($path, '$.');
     }
 }

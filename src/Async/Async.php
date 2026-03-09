@@ -32,9 +32,14 @@ class Async
             throw new RuntimeException('Failed to create async temp dir: ' . $tempDir);
         }
 
-        $inputFile = $tempDir . DIRECTORY_SEPARATOR . $id . '_input.php';
-        $outputFile = $tempDir . DIRECTORY_SEPARATOR . $id . '_output.json';
-        $workerFile = $tempDir . DIRECTORY_SEPARATOR . $id . '_worker.php';
+        $runDir = $tempDir . DIRECTORY_SEPARATOR . $id;
+        if (!is_dir($runDir) && !@mkdir($runDir, 0700, true) && !is_dir($runDir)) {
+            throw new RuntimeException('Failed to create isolated async run dir: ' . $runDir);
+        }
+
+        $inputFile = $runDir . DIRECTORY_SEPARATOR . 'input.php';
+        $outputFile = $runDir . DIRECTORY_SEPARATOR . 'output.json';
+        $workerFile = $runDir . DIRECTORY_SEPARATOR . 'worker.php';
 
         $payloadData = [
             'kind' => 'callable',
@@ -64,6 +69,7 @@ class Async
 
         if (file_put_contents($workerFile, $workerCode, LOCK_EX) === false) {
             @unlink($inputFile);
+            @rmdir($runDir);
             throw new RuntimeException('Failed to write async worker file: ' . $workerFile);
         }
 
@@ -88,6 +94,7 @@ class Async
         if (!is_resource($process)) {
             @unlink($inputFile);
             @unlink($workerFile);
+            @rmdir($runDir);
             throw new RuntimeException('Failed to start async process');
         }
 
@@ -104,7 +111,7 @@ class Async
             ? (int) $options['poll_interval']
             : self::$defaultPollIntervalMicros;
 
-        return new AsyncFuture($process, $pipes, $inputFile, $outputFile, $workerFile, $timeout, $pollInterval);
+        return new AsyncFuture($process, $pipes, $inputFile, $outputFile, $workerFile, $timeout, $pollInterval, $runDir);
     }
 
     /**

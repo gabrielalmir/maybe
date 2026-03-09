@@ -27,6 +27,9 @@ class AsyncFuture
     /** @var string */
     private $workerFile;
 
+    /** @var string|null */
+    private $runDir;
+
     /** @var float|null */
     private $timeoutSeconds;
 
@@ -70,13 +73,14 @@ class AsyncFuture
      * @param resource $process
      * @param array<int,resource> $pipes
      */
-    public function __construct($process, array $pipes, string $inputFile, string $outputFile, string $workerFile, ?float $timeoutSeconds, int $pollIntervalMicros)
+    public function __construct($process, array $pipes, string $inputFile, string $outputFile, string $workerFile, ?float $timeoutSeconds, int $pollIntervalMicros, ?string $runDir = null)
     {
         $this->process = $process;
         $this->pipes = $pipes;
         $this->inputFile = $inputFile;
         $this->outputFile = $outputFile;
         $this->workerFile = $workerFile;
+        $this->runDir = $runDir;
         $this->timeoutSeconds = $timeoutSeconds;
         $this->pollIntervalMicros = $pollIntervalMicros > 0 ? $pollIntervalMicros : 10000;
         $this->startedAt = microtime(true);
@@ -349,6 +353,10 @@ class AsyncFuture
             if (is_file($file)) {
                 @unlink($file);
             }
+        }
+
+        if ($this->runDir !== null && is_dir($this->runDir)) {
+            @rmdir($this->runDir);
         }
     }
 
