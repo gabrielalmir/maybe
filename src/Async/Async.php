@@ -28,8 +28,90 @@ class Async
     $id = self::makeId();
     $tempDir = isset($options['temp_dir']) ? (string) $options['temp_dir'] : self::tempDir();
 
-    if (!is_dir($tempDir) && !@mkdir($tempDir, 0777, true) && !is_dir($tempDir)) {
-      throw new RuntimeException('Failed to create async temp dir: ' . $tempDir);
+        if (!is_dir($tempDir) && !@mkdir($tempDir, 0777, true) && !is_dir($tempDir)) {
+            throw new RuntimeException('Failed to create async temp dir: ' . $tempDir);
+        }
+
+        $runDir = $tempDir . DIRECTORY_SEPARATOR . $id;
+        if (!is_dir($runDir) && !@mkdir($runDir, 0700, true) && !is_dir($runDir)) {
+            throw new RuntimeException('Failed to create isolated async run dir: ' . $runDir);
+        }
+
+        $inputFile = $runDir . DIRECTORY_SEPARATOR . 'input.php';
+        $outputFile = $runDir . DIRECTORY_SEPARATOR . 'output.json';
+        $workerFile = $runDir . DIRECTORY_SEPARATOR . 'worker.php';
+
+        $payloadData = [
+            'kind' => 'callable',
+            'task' => '',
+            'args' => serialize($args),
+        ];
+
+        if ($task instanceof Closure) {
+            self::ensureOpisClosureLoaded();
+            $payloadData['kind'] = 'closure';
+            $payloadData['task'] = \Opis\Closure\serialize($task);
+        } else {
+            $payloadData['task'] = serialize($task);
+        }
+
+        $payload = "<?php\n\nreturn " . var_export($payloadData, true) . ";\n";
+
+        if (file_put_contents($inputFile, $payload, LOCK_EX) === false) {
+            throw new RuntimeException('Failed to write async input file: ' . $inputFile);
+        }
+
+        $runtimeFile = __DIR__ . DIRECTORY_SEPARATOR . 'WorkerRuntime.php';
+        $workerCode = "<?php\n"
+            . "declare(strict_types=1);\n"
+            . "require " . var_export($runtimeFile, true) . ";\n"
+            . "\\Maybe\\Async\\WorkerRuntime::run(\$argv[1], \$argv[2], \$argv[3] ?? null);\n";
+
+        if (file_put_contents($workerFile, $workerCode, LOCK_EX) === false) {
+            @unlink($inputFile);
+            @rmdir($runDir);
+            throw new RuntimeException('Failed to write async worker file: ' . $workerFile);
+        }
+
+        $phpBinary = isset($options['php_binary']) ? (string) $options['php_binary'] : PHP_BINARY;
+        $autoload = isset($options['autoload']) ? (string) $options['autoload'] : self::resolveAutoloadPath();
+
+        $command = escapeshellarg($phpBinary)
+            . ' ' . escapeshellarg($workerFile)
+            . ' ' . escapeshellarg($inputFile)
+            . ' ' . escapeshellarg($outputFile)
+            . ' ' . escapeshellarg($autoload ?? '');
+
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $pipes = [];
+        $process = proc_open($command, $descriptors, $pipes, null, null, ['bypass_shell' => true]);
+
+        if (!is_resource($process)) {
+            @unlink($inputFile);
+            @unlink($workerFile);
+            @rmdir($runDir);
+            throw new RuntimeException('Failed to start async process');
+        }
+
+        if (isset($pipes[0]) && is_resource($pipes[0])) {
+            fclose($pipes[0]);
+            unset($pipes[0]);
+        }
+
+        $timeout = array_key_exists('timeout', $options)
+            ? ($options['timeout'] === null ? null : (float) $options['timeout'])
+            : self::$defaultTimeoutSeconds;
+
+        $pollInterval = isset($options['poll_interval'])
+            ? (int) $options['poll_interval']
+            : self::$defaultPollIntervalMicros;
+
+        return new AsyncFuture($process, $pipes, $inputFile, $outputFile, $workerFile, $timeout, $pollInterval, $runDir);
     }
 
     $inputFile = $tempDir . DIRECTORY_SEPARATOR . $id . '_input.php';

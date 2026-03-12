@@ -8,13 +8,72 @@ use Throwable;
 
 final class WorkerRuntime
 {
-  public static function run(
-    string $inputFile,
-    string $outputFile,
-    ?string $autoloadFile = null
-  ): void {
-    if ($autoloadFile !== null && $autoloadFile !== '' && is_file($autoloadFile)) {
-      require_once $autoloadFile;
+    public static function run(string $inputFile, string $outputFile, ?string $autoloadFile = null): void
+    {
+        if ($autoloadFile !== null && $autoloadFile !== '' && is_file($autoloadFile)) {
+            require_once $autoloadFile;
+        }
+
+        $result = [
+            'ok' => false,
+            'error' => [
+                'class' => 'RuntimeException',
+                'message' => 'Unknown worker failure',
+                'code' => 1,
+                'trace' => '',
+            ],
+        ];
+
+        try {
+            /** @var array{kind?:string,task:string,args:string} $payload */
+            $payload = require $inputFile;
+
+            $kind = isset($payload['kind']) ? (string) $payload['kind'] : 'closure';
+
+            if ($kind === 'closure') {
+                self::ensureOpisClosureLoaded();
+                /** @var callable $task */
+                $task = \Opis\Closure\unserialize($payload['task']);
+            } else {
+                /** @var mixed $callable */
+                $callable = unserialize($payload['task'], ['allowed_classes' => true]);
+                if (!is_callable($callable)) {
+                    throw new \RuntimeException('Task payload is not callable');
+                }
+
+                $task = $callable;
+            }
+
+            /** @var array<int,mixed> $args */
+            $args = unserialize($payload['args'], ['allowed_classes' => true]);
+            if (!is_array($args)) {
+                throw new \RuntimeException('Task args payload must be an array');
+            }
+
+            $value = $task(...$args);
+
+            $result = [
+                'ok' => true,
+                'result' => base64_encode(serialize($value)),
+            ];
+        } catch (Throwable $e) {
+            $result = [
+                'ok' => false,
+                'error' => [
+                    'class' => get_class($e),
+                    'message' => $e->getMessage(),
+                    'code' => (int) $e->getCode(),
+                    'trace' => $e->getTraceAsString(),
+                ],
+            ];
+        }
+
+        $encoded = json_encode($result);
+        if ($encoded === false) {
+            $encoded = '{"ok":false,"error":{"class":"RuntimeException","message":"Worker failed to encode output","code":2,"trace":""}}';
+        }
+
+        file_put_contents($outputFile, $encoded, LOCK_EX);
     }
 
     $result = [

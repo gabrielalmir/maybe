@@ -27,8 +27,11 @@ class AsyncFuture
   /** @var string */
   private $workerFile;
 
-  /** @var float|null */
-  private $timeoutSeconds;
+    /** @var string|null */
+    private $runDir;
+
+    /** @var float|null */
+    private $timeoutSeconds;
 
   /** @var int */
   private $pollIntervalMicros;
@@ -66,33 +69,21 @@ class AsyncFuture
   /** @var array<int,callable> */
   private $finallyCallbacks = [];
 
-  /**
-   * @param resource $process
-   * @param array<int,resource> $pipes
-   */
-  public function __construct(
-    $process,
-    array $pipes,
-    string $inputFile,
-    string $outputFile,
-    string $workerFile,
-    ?float $timeoutSeconds,
-    int $pollIntervalMicros
-  ) {
-    $this->process = $process;
-    $this->pipes = $pipes;
-    $this->inputFile = $inputFile;
-    $this->outputFile = $outputFile;
-    $this->workerFile = $workerFile;
-    $this->timeoutSeconds = $timeoutSeconds;
-    $this->pollIntervalMicros = $pollIntervalMicros > 0 ? $pollIntervalMicros : 10000;
-    $this->startedAt = microtime(true);
-  }
-
-  public function __destruct()
-  {
-    if (!$this->settled) {
-      $this->cancel();
+    /**
+     * @param resource $process
+     * @param array<int,resource> $pipes
+     */
+    public function __construct($process, array $pipes, string $inputFile, string $outputFile, string $workerFile, ?float $timeoutSeconds, int $pollIntervalMicros, ?string $runDir = null)
+    {
+        $this->process = $process;
+        $this->pipes = $pipes;
+        $this->inputFile = $inputFile;
+        $this->outputFile = $outputFile;
+        $this->workerFile = $workerFile;
+        $this->runDir = $runDir;
+        $this->timeoutSeconds = $timeoutSeconds;
+        $this->pollIntervalMicros = $pollIntervalMicros > 0 ? $pollIntervalMicros : 10000;
+        $this->startedAt = microtime(true);
     }
 
     $this->cleanupFiles();
@@ -261,19 +252,17 @@ class AsyncFuture
       proc_terminate($this->process);
     }
 
-    $this->rawError = new TimeoutException(
-      'Async task exceeded timeout of ' . $this->timeoutSeconds . ' second(s)',
-    );
-    $this->settled = true;
+    private function cleanupFiles(): void
+    {
+        foreach ([$this->inputFile, $this->outputFile, $this->workerFile] as $file) {
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
 
-    $this->cleanupProcess();
-    $this->cleanupFiles();
-  }
-
-  private function collectOutcome(): void
-  {
-    if ($this->settled) {
-      return;
+        if ($this->runDir !== null && is_dir($this->runDir)) {
+            @rmdir($this->runDir);
+        }
     }
 
     $stderr = $this->readPipe(2);
