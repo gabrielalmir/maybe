@@ -9,18 +9,18 @@ namespace Maybe\Schema;
  */
 final class BoolSchema extends AbstractSchema
 {
-    /**
-     * @param mixed $input
-     * @return bool
-     */
-    public function parse($input): bool
-    {
-        if (!is_bool($input)) {
-            throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'Expected bool', 'type.bool'))
-            );
-        }
-
-        return $input;
+  /**
+   * @param mixed $input
+   * @return bool
+   */
+  public function parse($input): bool
+  {
+    if (!is_bool($input)) {
+      throw new ValidationException(
+        ValidationErrorBag::single(new ValidationError('$', 'Expected bool', 'type.bool')),
+      );
     }
+
+    return $input;
+  }
 }

@@ -11,34 +11,34 @@ namespace Maybe\Schema;
  */
 final class TransformSchema extends AbstractSchema
 {
-    /**
-     * @var SchemaInterface<TIn>
-     */
-    private $inner;
+  /**
+   * @var SchemaInterface<TIn>
+   */
+  private $inner;
 
-    /**
-     * @var callable(TIn):TOut
-     */
-    private $transform;
+  /**
+   * @var callable(TIn):TOut
+   */
+  private $transform;
 
-    /**
-     * @param SchemaInterface<TIn> $inner
-     * @param callable(TIn):TOut $transform
-     */
-    public function __construct(SchemaInterface $inner, callable $transform)
-    {
-        $this->inner = $inner;
-        $this->transform = $transform;
-    }
+  /**
+   * @param SchemaInterface<TIn> $inner
+   * @param callable(TIn):TOut $transform
+   */
+  public function __construct(SchemaInterface $inner, callable $transform)
+  {
+    $this->inner = $inner;
+    $this->transform = $transform;
+  }
 
-    /**
-     * @param mixed $input
-     * @return TOut
-     */
-    public function parse($input)
-    {
-        $parsed = $this->inner->parse($input);
+  /**
+   * @param mixed $input
+   * @return TOut
+   */
+  public function parse($input)
+  {
+    $parsed = $this->inner->parse($input);
 
-        return ($this->transform)($parsed);
-    }
+    return ($this->transform)($parsed);
+  }
 }

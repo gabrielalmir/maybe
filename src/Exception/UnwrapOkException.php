@@ -4,6 +4,4 @@ declare(strict_types=1);
 
 namespace Maybe\Exception;
 
-final class UnwrapOkException extends UnwrapException
-{
-}
+final class UnwrapOkException extends UnwrapException {}

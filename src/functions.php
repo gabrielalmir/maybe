@@ -20,7 +20,7 @@ use Maybe\Schema\SchemaInterface;
  */
 function some($value): Option
 {
-    return Option::some($value);
+  return Option::some($value);
 }
 
 /**
@@ -28,7 +28,7 @@ function some($value): Option
  */
 function none(): Option
 {
-    return Option::none();
+  return Option::none();
 }
 
 /**
@@ -38,7 +38,7 @@ function none(): Option
  */
 function fromNullable($value): Option
 {
-    return Option::fromNullable($value);
+  return Option::fromNullable($value);
 }
 
 /**
@@ -48,7 +48,7 @@ function fromNullable($value): Option
  */
 function ok($value): Result
 {
-    return Result::ok($value);
+  return Result::ok($value);
 }
 
 /**
@@ -58,7 +58,7 @@ function ok($value): Result
  */
 function err($error): Result
 {
-    return Result::err($error);
+  return Result::err($error);
 }
 
 /**
@@ -66,7 +66,7 @@ function err($error): Result
  */
 function stringSchema()
 {
-    return Schema::string();
+  return Schema::string();
 }
 
 /**
@@ -74,7 +74,7 @@ function stringSchema()
  */
 function intSchema()
 {
-    return Schema::int();
+  return Schema::int();
 }
 
 /**
@@ -82,7 +82,7 @@ function intSchema()
  */
 function boolSchema()
 {
-    return Schema::bool();
+  return Schema::bool();
 }
 
 /**
@@ -90,7 +90,7 @@ function boolSchema()
  */
 function dateSchema()
 {
-    return Schema::date();
+  return Schema::date();
 }
 
 /**
@@ -100,7 +100,7 @@ function dateSchema()
  */
 function enumSchema(array $allowedValues)
 {
-    return Schema::enumeration($allowedValues);
+  return Schema::enumeration($allowedValues);
 }
 
 /**
@@ -110,7 +110,7 @@ function enumSchema(array $allowedValues)
  */
 function arraySchema(SchemaInterface $itemSchema)
 {
-    return Schema::arrayOf($itemSchema);
+  return Schema::arrayOf($itemSchema);
 }
 
 /**
@@ -119,7 +119,7 @@ function arraySchema(SchemaInterface $itemSchema)
  */
 function objectSchema(array $shape): ObjectSchema
 {
-    return Schema::shape($shape);
+  return Schema::shape($shape);
 }
 
 /**
@@ -129,7 +129,7 @@ function objectSchema(array $shape): ObjectSchema
  */
 function optionSchema(SchemaInterface $inner): OptionSchema
 {
-    return Schema::option($inner);
+  return Schema::option($inner);
 }
 
 /**
@@ -138,7 +138,7 @@ function optionSchema(SchemaInterface $inner): OptionSchema
  */
 function async(callable $task, array $args = [], array $options = []): AsyncFuture
 {
-    return Async::run($task, $args, $options);
+  return Async::run($task, $args, $options);
 }
 
 /**
@@ -147,13 +147,13 @@ function async(callable $task, array $args = [], array $options = []): AsyncFutu
  */
 function await($value)
 {
-    if ($value instanceof AsyncFuture) {
-        return $value->resolve();
-    }
+  if ($value instanceof AsyncFuture) {
+    return $value->resolve();
+  }
 
-    if (is_array($value)) {
-        return Async::all($value);
-    }
+  if (is_array($value)) {
+    return Async::all($value);
+  }
 
-    return $value;
+  return $value;
 }

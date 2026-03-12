@@ -8,17 +8,17 @@ use Maybe\Async\Async;
 
 $tasks = [];
 for ($i = 1; $i <= 10; $i++) {
-    $tasks[] = [
-        static function (int $n): array {
-            usleep(120000);
+  $tasks[] = [
+    static function (int $n): array {
+      usleep(120000);
 
-            return [
-                'item' => $n,
-                'square' => $n * $n,
-            ];
-        },
-        [$i],
-    ];
+      return [
+        'item' => $n,
+        'square' => $n * $n,
+      ];
+    },
+    [$i],
+  ];
 }
 
 $start = microtime(true);

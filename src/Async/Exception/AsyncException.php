@@ -6,6 +6,4 @@ namespace Maybe\Async\Exception;
 
 use RuntimeException;
 
-class AsyncException extends RuntimeException
-{
-}
+class AsyncException extends RuntimeException {}

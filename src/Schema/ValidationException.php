@@ -8,20 +8,19 @@ use Maybe\Exception\LogicException;
 
 final class ValidationException extends LogicException
 {
-    /**
-     * @var ValidationErrorBag
-     */
-    private $errors;
+  /**
+   * @var ValidationErrorBag
+   */
+  private $errors;
 
-    public function __construct(ValidationErrorBag $errors)
-    {
-        $this->errors = $errors;
-        parent::__construct($errors->summary());
-    }
+  public function __construct(ValidationErrorBag $errors)
+  {
+    $this->errors = $errors;
+    parent::__construct($errors->summary());
+  }
 
-    public function errors(): ValidationErrorBag
-    {
-        return $this->errors;
-    }
+  public function errors(): ValidationErrorBag
+  {
+    return $this->errors;
+  }
 }
-

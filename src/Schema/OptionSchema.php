@@ -12,29 +12,29 @@ use Maybe\Option\Option;
  */
 final class OptionSchema extends AbstractSchema
 {
-    /**
-     * @var SchemaInterface<T>
-     */
-    private $inner;
+  /**
+   * @var SchemaInterface<T>
+   */
+  private $inner;
 
-    /**
-     * @param SchemaInterface<T> $inner
-     */
-    public function __construct(SchemaInterface $inner)
-    {
-        $this->inner = $inner;
+  /**
+   * @param SchemaInterface<T> $inner
+   */
+  public function __construct(SchemaInterface $inner)
+  {
+    $this->inner = $inner;
+  }
+
+  /**
+   * @param mixed $input
+   * @return Option<T>
+   */
+  public function parse($input): Option
+  {
+    if ($input === null) {
+      return Option::none();
     }
 
-    /**
-     * @param mixed $input
-     * @return Option<T>
-     */
-    public function parse($input): Option
-    {
-        if ($input === null) {
-            return Option::none();
-        }
-
-        return Option::some($this->inner->parse($input));
-    }
+    return Option::some($this->inner->parse($input));
+  }
 }
