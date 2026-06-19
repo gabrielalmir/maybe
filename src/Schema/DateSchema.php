@@ -74,24 +74,26 @@ final class DateSchema extends AbstractSchema
             );
         }
 
-        if ($this->min !== null && $parsed < $this->min) {
+        $min = $this->normalizeBoundary($this->min);
+        if ($min !== null && $parsed < $min) {
             throw new ValidationException(
                 ValidationErrorBag::single(
                     new ValidationError(
                         '$',
-                        sprintf('Date must be on or after %s', $this->min->format($this->format)),
+                        sprintf('Date must be on or after %s', $min->format($this->format)),
                         'date.min'
                     )
                 )
             );
         }
 
-        if ($this->max !== null && $parsed > $this->max) {
+        $max = $this->normalizeBoundary($this->max);
+        if ($max !== null && $parsed > $max) {
             throw new ValidationException(
                 ValidationErrorBag::single(
                     new ValidationError(
                         '$',
-                        sprintf('Date must be on or before %s', $this->max->format($this->format)),
+                        sprintf('Date must be on or before %s', $max->format($this->format)),
                         'date.max'
                     )
                 )
@@ -99,5 +101,16 @@ final class DateSchema extends AbstractSchema
         }
 
         return $parsed;
+    }
+
+    private function normalizeBoundary(?DateTimeImmutable $boundary): ?DateTimeImmutable
+    {
+        if ($boundary === null) {
+            return null;
+        }
+
+        $normalized = DateTimeImmutable::createFromFormat('!' . $this->format, $boundary->format($this->format));
+
+        return $normalized === false ? $boundary : $normalized;
     }
 }
