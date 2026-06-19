@@ -1,4 +1,4 @@
-# Maybe (v0.2.0)
+# Maybe (v0.2.1)
 
 `Maybe` is a PHP library for explicit and predictable business logic.
 
@@ -9,6 +9,19 @@ It combines 5 main building blocks:
 - `Schema`: immutable parsing and validation
 - `DTO`: validated mapping for input objects
 - `Async`: concurrent execution via processes (`proc_open`) focused on PHP 7.4 + Windows + CI3
+
+
+## Adoption Guides
+
+New users in corporate or legacy environments should start with `Schema`, `DTO`, and `Result` before adopting `Async`. Detailed adoption guidance lives in `docs/` so this README can remain a compact API overview.
+
+- [Corporate Adoption Guide](docs/01-corporate-adoption-guide.md)
+- [CodeIgniter 3 Guide](docs/02-codeigniter-3-guide.md)
+- [Usage Patterns](docs/03-usage-patterns.md)
+- [Practical Recipes](docs/04-practical-recipes.md)
+- [Anti-Patterns](docs/05-anti-patterns.md)
+- [Incremental Migration](docs/06-incremental-migration.md)
+- [Async Safety Guide](docs/07-async-safety-guide.md)
 
 ## Requirements
 
