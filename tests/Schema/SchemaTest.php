@@ -71,6 +71,16 @@ it('returns err for invalid date format or bounds', function (): void {
     Assert::assertSame('date.max', $lateErrors->first()->code());
 });
 
+
+it('accepts dates exactly on min and max boundaries', function (): void {
+    $schema = Schema::date()
+        ->min(new \DateTimeImmutable('2024-01-01 12:34:56'))
+        ->max(new \DateTimeImmutable('2024-12-31 12:34:56'));
+
+    Assert::assertSame('2024-01-01', $schema->parse('2024-01-01')->format('Y-m-d'));
+    Assert::assertSame('2024-12-31', $schema->parse('2024-12-31')->format('Y-m-d'));
+});
+
 it('parses valid values with enumeration schema', function (): void {
     $schema = Schema::enumeration(['pending', 'paid', 'failed']);
 
