@@ -81,6 +81,29 @@ it('accepts dates exactly on min and max boundaries', function (): void {
     Assert::assertSame('2024-12-31', $schema->parse('2024-12-31')->format('Y-m-d'));
 });
 
+
+it('reports nested array validation paths from the document root', function (): void {
+    $schema = Schema::arrayOf(Schema::shape([
+        'age' => Schema::int()->min(18),
+    ]));
+
+    $result = $schema->safeParse([
+        ['age' => 17],
+        ['age' => 'old'],
+    ]);
+
+    $errors = $result->match(
+        static fn ($value): ?ValidationErrorBag => null,
+        static fn (ValidationErrorBag $errors): ValidationErrorBag => $errors
+    );
+
+    Assert::assertInstanceOf(ValidationErrorBag::class, $errors);
+    Assert::assertSame('$[0].age', $errors->all()[0]->path());
+    Assert::assertSame('int.min', $errors->all()[0]->code());
+    Assert::assertSame('$[1].age', $errors->all()[1]->path());
+    Assert::assertSame('type.int', $errors->all()[1]->code());
+});
+
 it('parses valid values with enumeration schema', function (): void {
     $schema = Schema::enumeration(['pending', 'paid', 'failed']);
 

@@ -45,7 +45,7 @@ final class ArraySchema extends AbstractSchema
                 foreach ($e->errors()->all() as $error) {
                     $errors = $errors->withError(
                         new ValidationError(
-                            sprintf('[%d]%s', $index, $this->normalizePath($error->path())),
+                            sprintf('$[%d]%s', $index, $this->normalizePath($error->path())),
                             $error->message(),
                             $error->code()
                         )
