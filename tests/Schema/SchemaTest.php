@@ -32,6 +32,19 @@ it('parses valid arrays with arrayOf', function (): void {
     Assert::assertSame([1, 2, 3], $schema->parse([1, 2, 3]));
 });
 
+it('preserves bracket notation for nested array validation paths', function (): void {
+    $schema = Schema::arrayOf(Schema::arrayOf(Schema::int()));
+    $result = $schema->safeParse([[1], ['nope']]);
+
+    $errors = $result->match(
+        static fn ($value): ?ValidationErrorBag => null,
+        static fn (ValidationErrorBag $errors): ValidationErrorBag => $errors
+    );
+
+    Assert::assertInstanceOf(ValidationErrorBag::class, $errors);
+    Assert::assertSame('$[1][0]', $errors->first()->path());
+});
+
 it('parses valid dates with date schema', function (): void {
     $schema = Schema::date();
 
