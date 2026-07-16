@@ -63,6 +63,12 @@ final class ArraySchema extends AbstractSchema
 
     private function normalizePath(string $path): string
     {
-        return $path === '$' ? '' : '.' . ltrim($path, '$.');
+        if ($path === '$') {
+            return '';
+        }
+
+        $relativePath = ltrim($path, '$');
+
+        return strpos($relativePath, '[') === 0 ? $relativePath : '.' . ltrim($relativePath, '.');
     }
 }
