@@ -1,5 +1,7 @@
 # Maybe (v0.2.2)
 
+📖 **Documentation:** https://gabrielalmir.github.io/maybe/
+
 `Maybe` is a PHP library for explicit and predictable business logic.
 
 It combines 5 main building blocks:
