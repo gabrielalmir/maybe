@@ -43,6 +43,16 @@
   --vp-c-bg-soft: #201f27;
   --vp-c-gutter: #2a2933;
   --vp-c-divider: #2a2933;
+  /*
+   * --vp-c-text-1/2 are set unconditionally above in :root (light-mode
+   * values). Since :root and .dark target the same <html> element with
+   * equal selector specificity, whichever rule comes later in the
+   * cascade wins per custom property — so without redefining them here,
+   * the near-black light-mode text color leaks into dark mode and
+   * becomes nearly invisible against the dark background.
+   */
+  --vp-c-text-1: rgba(251, 250, 248, 0.92);
+  --vp-c-text-2: rgba(205, 201, 214, 0.7);
   --vp-c-brand-1: var(--maybe-brand-3);
   --vp-c-brand-2: var(--maybe-brand-1);
   --vp-button-brand-bg: var(--maybe-brand-1);
