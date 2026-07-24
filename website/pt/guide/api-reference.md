@@ -101,11 +101,15 @@ Value objects Tell-Don't-Ask — **não** existem getters `path()`, `message()`,
 
 | Membro | Assinatura | Descrição |
 | --- | --- | --- |
-| `async` | `async(callable $task, array $args = [], array $options = []): AsyncFuture` | Inicia uma task. `options: ['timeout' => 2.5]`. |
+| `async` | `async(callable $task, array $args = [], array $options = []): AsyncFuture` | Inicia uma task. `options: ['timeout' => 2.5]`. Envolve `Async::run`. |
 | `await` | `await($futureOrArray)` | Resolve um future, ou um array via `Async::all`. |
-| `Async::all` | `all(array $futures)` | Espera todos (chaves preservadas). |
+| `Async::run` | `run(callable $task, array $args = [], array $options = []): AsyncFuture` | Igual a `async()`, chamado direto na classe. |
+| `Async::all` | `all(array $futures): array` | Espera todos (chaves preservadas). |
 | `Async::race` | `race(array $futures)` | O primeiro a terminar vence. |
-| `Async::pool` | `pool(array $tasks, int $limit)` | Concorrência limitada. |
+| `Async::pool` | `pool(array $tasks, int $limit = 5, array $options = []): array` | Concorrência limitada. |
+| `Async::setDefaultTempDir` | `setDefaultTempDir(string $tempDir): void` | Sobrescreve onde os arquivos temporários do worker são escritos. |
+| `Async::setDefaultTimeout` | `setDefaultTimeout(?float $seconds): void` | Timeout padrão por task quando `options['timeout']` é omitido. |
+| `Async::setDefaultPollInterval` | `setDefaultPollInterval(int $microseconds): void` | Intervalo de polling padrão usado ao esperar um future. |
 | `AsyncFuture` | `->then(fn)`, `->catch(fn)`, `->finally(fn)` | Registra callbacks. |
 | | `->resolve()` | Bloqueia até terminar (ou timeout). |
 | | `->pending(): bool`, `->cancel()` | Checagem não bloqueante / mata o processo. |
