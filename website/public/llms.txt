@@ -1,0 +1,109 @@
+# Maybe
+
+> PHP library providing typed `Option<T>` and `Result<T, E>`, immutable `Schema` validation, validated `DTO` mapping, and process-based `Async` concurrency. Targets PHP >= 7.4, Windows, and legacy CodeIgniter 3 codebases. No exceptions as control flow; explicit success/error and presence/absence instead.
+
+This file is for AI assistants and coding agents generating code that uses the `gabrielalmir/maybe` Composer package. Follow it instead of guessing the API — method names and signatures below are exact.
+
+## Install
+
+```bash
+composer require gabrielalmir/maybe
+```
+
+## Core types and exact API
+
+### `Maybe\Option\Option<T>` — `Some`/`None`
+
+Constructors: `Option::some($v)`, `Option::none()`, `Option::fromNullable($v)`.
+
+Methods: `map(fn)`, `flatMap(fn)`, `filter(fn): Option`, `match(onSome, onNone)`, `unwrap()` (throws `UnwrapNoneException` on `None`), `unwrapOr($default)`, `unwrapOrElse(fn)`, `expect(string $message)`, `okOr($error): Result`, `okOrElse(fn): Result`, `isSome(): bool`, `isNone(): bool`.
+
+`map()` on `Some` collapses to `None` if the callback returns `null` (same rule as `fromNullable`) — it does not throw. `Some` itself can never be constructed with a `null` value.
+
+### `Maybe\Result\Result<T, E>` — `Ok`/`Err`
+
+Constructors: `Result::ok($v)`, `Result::err($e)`.
+
+Methods: `map(fn)`, `mapErr(fn)`, `andThen(fn): Result` (chain another fallible op, short-circuits on `Err`), `orElse(fn): Result` (recover from `Err`), `match(onOk, onErr)`, `unwrap()` (throws `UnwrapErrException` on `Err`), `unwrapErr()` (throws `UnwrapOkException` on `Ok`), `unwrapOr($default)`, `unwrapOrElse(fn)`, `expect(string $message)`, `okOption(): Option`, `errOption(): Option`, `isOk(): bool`, `isErr(): bool`.
+
+Prefer `Result` over throwing exceptions for *expected* business failures (validation, business rules, declined operations). Keep real exceptions for unexpected failures (broken config, I/O outages).
+
+### `Maybe\Schema\Schema` — immutable validation
+
+Builders: `Schema::string()`, `Schema::int()`, `Schema::bool()`, `Schema::date()`, `Schema::enumeration(array $values)`, `Schema::arrayOf($itemSchema)`, `Schema::shape(array $fields)`, `Schema::option($innerSchema)`.
+
+String modifiers: `->trimmed()`, `->min(int)`, `->max(int)`, `->regex(string)`. Int modifiers: `->min(int)`, `->max(int)`. Every modifier returns a new instance (immutable) — safe to share a base schema across multiple shapes.
+
+Entry point: `$schema->safeParse($input): Result<mixed, ValidationErrorBag>` — never throws. `ValidationErrorBag`: `->count()`, `->first(): ?ValidationError`, `->all(): ValidationError[]`, `->toArray()`, `->summary(): string`. `ValidationError`: `->path()`, `->message()`, `->code()`. Nested/array errors report JSONPath-like paths, e.g. `$.email`, `$[1].email`.
+
+### `Maybe\DTO\DTO`
+
+Abstract base class. A concrete DTO defines a `private function __construct(...)`, a `public static function schema(): ObjectSchema`, and a `protected static function fromValidated(array $validated)` that builds the instance.
+
+Entry points: `MyDTO::fromArray($input): Result<MyDTO, ValidationErrorBag>` (never throws), `MyDTO::parse($input)` (throws on invalid input — use only at boundaries where exceptions are the convention).
+
+### `Maybe\Async\Async` — process-based concurrency
+
+`async($callable, array $args = [], array $options = [])` returns an `AsyncFuture`. `await($futureOrArray)` resolves one future or an array of futures (via `Async::all`). Combinators: `Async::all([...])`, `Async::race([...])`, `Async::pool($tasks, $limit)`. `AsyncFuture`: `->then(fn)`, `->catch(fn)`, `->finally(fn)`, `->resolve()` (blocking), `->pending()` (non-blocking check), `->cancel()`. Per-task timeout via `['timeout' => 2.5]` in `$options`.
+
+Runs each task in a **separate PHP process** via `proc_open` — no shared memory, arguments/results are serialized, no `pcntl` required (works on Windows). Use only for isolated, serializable workloads; avoid for tasks holding open DB connections or file handles across the boundary.
+
+## Auto-loaded global helper functions
+
+`some($v)`, `none()`, `fromNullable($v)`, `ok($v)`, `err($e)`, `stringSchema()`, `intSchema()`, `boolSchema()`, `dateSchema()`, `enumSchema($values)`, `arraySchema($schema)`, `objectSchema($shape)`, `optionSchema($schema)`, `async($fn)`, `await($v)`.
+
+## Idiomatic patterns
+
+Chain fallible operations instead of nested `if`:
+
+```php
+$response = loadUser($id)
+    ->andThen(fn (array $user): Result => chargeSubscription($user))
+    ->map(fn (array $invoice): string => $invoice['number'])
+    ->match(
+        fn (string $number): string => "Invoice {$number} created",
+        fn (string $error): string => "Failed: {$error}"
+    );
+```
+
+Wrap a legacy, exception-throwing call at a boundary instead of letting exceptions leak into Maybe-typed code:
+
+```php
+function tryCatch(callable $fn): Result
+{
+    try {
+        return Result::ok($fn());
+    } catch (\Throwable $e) {
+        return Result::err($e);
+    }
+}
+```
+
+Repository/lookup pattern: return `Option`, not `null`; convert to `Result` only at the boundary that needs a typed error:
+
+```php
+function findUser(int $id): Option { /* ... */ }
+
+$result = findUser($id)->okOr('user_not_found');
+```
+
+## Rules for generating code against this library
+
+- Do not invent methods. If a needed operation isn't listed above, compose it from `map`/`andThen`/`match` rather than guessing a name.
+- Never call `unwrap()`/`unwrapErr()` in generated example or production code without first checking `isOk()`/`isSome()`, or prefer `match()`/`unwrapOr()`/`expect()` instead.
+- Target PHP >= 7.4 syntax unless the user's `composer.json` clearly requires a higher minimum — no constructor property promotion, no enums, no named arguments.
+- `DTO::fromArray()` and `Schema::safeParse()` never throw; only `DTO::parse()` throws.
+
+## Full documentation
+
+- Getting Started: https://gabrielalmir.github.io/maybe/guide/getting-started
+- Option: https://gabrielalmir.github.io/maybe/guide/option
+- Result: https://gabrielalmir.github.io/maybe/guide/result
+- Schema: https://gabrielalmir.github.io/maybe/guide/schema
+- DTO: https://gabrielalmir.github.io/maybe/guide/dto
+- Async: https://gabrielalmir.github.io/maybe/guide/async
+- Recipes (common solutions): https://gabrielalmir.github.io/maybe/guide/recipes
+- CodeIgniter 3: https://gabrielalmir.github.io/maybe/guide/codeigniter-3
+- Incremental Migration: https://gabrielalmir.github.io/maybe/guide/migration
+- Source: https://github.com/gabrielalmir/maybe
+- Changelog: https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md

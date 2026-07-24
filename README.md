@@ -218,13 +218,25 @@ composer test:async
 
 > Note: the legacy `test` runner uses Pest 1.x. On very new PHP versions, prefer `test:async` to validate the async module.
 
-## Async Examples
+## Examples
 
-Run the examples directly:
+Run any example directly:
 
 ```bash
+php examples/option-result.php              # Option + Result checkout flow
+php examples/schema-dto.php                  # DTO with Schema validation
+php examples/recipe-repository-lookup.php    # Option-based repository lookup
+php examples/recipe-safe-external-call.php   # wrapping legacy exceptions into Result
+php examples/recipe-batch-import.php         # batch validation with per-row errors
 php examples/async-basic.php
 php examples/async-all-race.php
 php examples/async-pool.php
 php examples/async-chain-timeout-cancel.php
 ```
+
+More recipes with explanations: [Recipes guide](https://gabrielalmir.github.io/maybe/guide/recipes).
+
+## Using an AI Coding Assistant
+
+- [`AGENTS.md`](AGENTS.md) — conventions and constraints for AI agents contributing to this repository.
+- [`llms.txt`](https://gabrielalmir.github.io/maybe/llms.txt) — a condensed, exact API reference for AI assistants generating code that *uses* this library.
