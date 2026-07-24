@@ -34,7 +34,18 @@ final class Some extends Option
      */
     public function map(callable $fn): Option
     {
-        return new self($fn($this->value));
+        // Mirror Option::fromNullable semantics: a callback returning null
+        // collapses to None instead of throwing (Some cannot hold null).
+        return Option::fromNullable($fn($this->value));
+    }
+
+    /**
+     * @param callable(T): bool $predicate
+     * @return Option<T>
+     */
+    public function filter(callable $predicate): Option
+    {
+        return $predicate($this->value) ? $this : Option::none();
     }
 
     /**

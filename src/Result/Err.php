@@ -50,6 +50,35 @@ final class Err extends Result
     }
 
     /**
+     * @template U
+     * @param callable(T): Result<U,E> $fn
+     * @return Result<U,E>
+     */
+    public function andThen(callable $fn): Result
+    {
+        /** @var Result<U,E> $result */
+        $result = $this;
+
+        return $result;
+    }
+
+    /**
+     * @template F
+     * @param callable(E): Result<T,F> $fn
+     * @return Result<T,F>
+     */
+    public function orElse(callable $fn): Result
+    {
+        $result = $fn($this->error);
+
+        if (!$result instanceof Result) {
+            throw new \UnexpectedValueException('Result::orElse callback must return a Result instance.');
+        }
+
+        return $result;
+    }
+
+    /**
      * @template R
      * @param callable(T): R $onOk
      * @param callable(E): R $onErr

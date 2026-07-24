@@ -50,6 +50,35 @@ final class Ok extends Result
     }
 
     /**
+     * @template U
+     * @param callable(T): Result<U,E> $fn
+     * @return Result<U,E>
+     */
+    public function andThen(callable $fn): Result
+    {
+        $result = $fn($this->value);
+
+        if (!$result instanceof Result) {
+            throw new \UnexpectedValueException('Result::andThen callback must return a Result instance.');
+        }
+
+        return $result;
+    }
+
+    /**
+     * @template F
+     * @param callable(E): Result<T,F> $fn
+     * @return Result<T,F>
+     */
+    public function orElse(callable $fn): Result
+    {
+        /** @var Result<T,F> $result */
+        $result = $this;
+
+        return $result;
+    }
+
+    /**
      * @template R
      * @param callable(T): R $onOk
      * @param callable(E): R $onErr
