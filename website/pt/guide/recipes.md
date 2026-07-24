@@ -2,6 +2,8 @@
 
 Scripts executáveis e independentes para problemas comuns. Cada arquivo vive em [`examples/`](https://github.com/gabrielalmir/maybe/tree/main/examples) no repositório e pode ser executado diretamente com `php examples/<arquivo>.php` após instalar as dependências (`composer install`).
 
+> Procurando o contexto de negócio por trás desses snippets — o risco, o código legado, por que isso importa? Veja [Estudos de Caso](/pt/guide/case-studies) para percursos completos: e-mail transacional, integração com SAP e validação de contratos.
+
 ## Checkout com cupons e autorização de pagamento
 
 `Option` para um código de cupom opcional, `Result` encadeando uma etapa de desconto com uma etapa de autorização de pagamento.

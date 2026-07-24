@@ -11,6 +11,7 @@ const guideSidebarEn = [
       { text: 'DTO', link: '/guide/dto' },
       { text: 'Async', link: '/guide/async' },
       { text: 'Recipes', link: '/guide/recipes' },
+      { text: 'Case Studies', link: '/guide/case-studies' },
       { text: 'CodeIgniter 3', link: '/guide/codeigniter-3' },
       { text: 'Incremental Migration', link: '/guide/migration' }
     ]
@@ -28,6 +29,7 @@ const guideSidebarPt = [
       { text: 'DTO', link: '/pt/guide/dto' },
       { text: 'Async', link: '/pt/guide/async' },
       { text: 'Receitas', link: '/pt/guide/recipes' },
+      { text: 'Estudos de Caso', link: '/pt/guide/case-studies' },
       { text: 'CodeIgniter 3', link: '/pt/guide/codeigniter-3' },
       { text: 'Migração Incremental', link: '/pt/guide/migration' }
     ]

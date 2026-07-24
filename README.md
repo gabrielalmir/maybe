@@ -228,13 +228,16 @@ php examples/schema-dto.php                  # DTO with Schema validation
 php examples/recipe-repository-lookup.php    # Option-based repository lookup
 php examples/recipe-safe-external-call.php   # wrapping legacy exceptions into Result
 php examples/recipe-batch-import.php         # batch validation with per-row errors
+php examples/scenario-transactional-email.php     # order-confirmation email with SMTP fallback
+php examples/scenario-sap-order-integration.php    # pushing orders into SAP with retryable vs business errors
+php examples/scenario-contract-validation.php      # contract validation with cross-field business rules
 php examples/async-basic.php
 php examples/async-all-race.php
 php examples/async-pool.php
 php examples/async-chain-timeout-cancel.php
 ```
 
-More recipes with explanations: [Recipes guide](https://gabrielalmir.github.io/maybe/guide/recipes).
+More recipes with explanations: [Recipes guide](https://gabrielalmir.github.io/maybe/guide/recipes). For full business context on the scenario examples: [Case Studies](https://gabrielalmir.github.io/maybe/guide/case-studies).
 
 ## Using an AI Coding Assistant
 
