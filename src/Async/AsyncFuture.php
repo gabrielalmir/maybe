@@ -77,7 +77,7 @@ class AsyncFuture
      * @param resource $process
      * @param array<int,resource> $pipes
      */
-    public function __construct($process, array $pipes, string $inputFile, string $outputFile, string $workerFile, ?float $timeoutSeconds, int $pollIntervalMicros, ?string $runDir = null, ?string $secret = null, ?int $maxOutputBytes = null)
+    public function __construct($process, array $pipes, string $inputFile, string $outputFile, ?float $timeoutSeconds, int $pollIntervalMicros, ?string $runDir = null, ?string $secret = null, ?int $maxOutputBytes = null)
     {
         $this->process = $process;
         $this->pipes = $pipes;
@@ -319,7 +319,7 @@ class AsyncFuture
             if ($decoded['ok'] === true) {
                 $this->rawValue = $decoded['result'] ?? null;
             } else {
-                $error = isset($decoded['error']) && is_array($decoded['error']) ? $decoded['error'] : [];
+                $error = isset($decoded['error']) ? $decoded['error'] : [];
                 $message = isset($error['message']) ? (string) $error['message'] : 'Unknown async task error';
                 $class = isset($error['class']) ? (string) $error['class'] : 'RuntimeException';
                 $code = isset($error['code']) ? (int) $error['code'] : 1;

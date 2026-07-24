@@ -40,7 +40,7 @@
     "scripts": {
         "lint": "phpstan analyse --memory-limit=1G --no-progress --debug",
         "test": "pest --configuration phpunit.xml.dist",
-        "test:async": "php -d error_reporting='E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED' tests/Async/run.php",
+        "test:async": "php tests/Async/run.php",
         "qa": [
             "@guard",
             "@lint",

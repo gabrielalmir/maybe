@@ -101,7 +101,7 @@ class Async
                 ? (int) $options['poll_interval']
                 : self::$defaultPollIntervalMicros;
 
-            return new AsyncFuture($process, $pipes, $inputFile, $outputFile, $workerFile, $timeout, $pollInterval, $runDir, $secret, $maxOutputBytes);
+            return new AsyncFuture($process, $pipes, $inputFile, $outputFile, $timeout, $pollInterval, $runDir, $secret, $maxOutputBytes);
         } catch (\Throwable $e) {
             if (is_resource($process)) {
                 @proc_terminate($process);
@@ -142,7 +142,10 @@ class Async
         return $results;
     }
 
-    /** @param array<mixed,mixed> $futures */
+    /**
+     * @param array<mixed,mixed> $futures
+     * @return mixed
+     */
     public static function race(array $futures)
     {
         if ($futures === []) {
@@ -340,7 +343,10 @@ class Async
         @rmdir($runDir);
     }
 
-    /** @param array<mixed,mixed> $futures */
+    /**
+     * @param array<mixed,mixed> $futures
+     * @param int|string $winnerKey
+     */
     private static function cancelOthers(array $futures, $winnerKey): void
     {
         foreach ($futures as $key => $future) {
@@ -402,7 +408,10 @@ class Async
         }
     }
 
-    /** @param mixed $task */
+    /**
+     * @param mixed $task
+     * @param array<string,mixed> $options
+     */
     private static function toFuture($task, array $options): AsyncFuture
     {
         if ($task instanceof AsyncFuture) {
