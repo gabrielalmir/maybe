@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: Maybe
-  text: Explicit, predictable business logic for PHP
-  tagline: Option, Result, Schema, DTO and Async — Rust-inspired primitives that work on PHP 7.4+, Windows and legacy codebases.
+  text: PHP without null. Errors without try/catch.
+  tagline: Option, Result, Schema, DTO and Async — typed success and error paths for PHP 7.4+, Windows and legacy codebases.
   actions:
     - theme: brand
       text: Get Started
@@ -14,42 +14,38 @@ hero:
       link: https://github.com/gabrielalmir/maybe
 
 features:
-  - icon: 🎁
+  - icon:
+      src: /icons/option.svg
     title: Option
     details: Model optional values without null checks scattered everywhere. Some/None with map, flatMap, filter and safe unwrapping.
-  - icon: ✅
+  - icon:
+      src: /icons/result.svg
     title: Result
     details: Typed success/error flows without exceptions as control flow. Chain fallible operations with andThen and recover with orElse.
-  - icon: 🧪
+  - icon:
+      src: /icons/schema.svg
     title: Schema
     details: Zod-inspired, immutable parsing and validation. Compose strings, ints, enums, arrays and object shapes with rich error reporting.
-  - icon: 📦
+  - icon:
+      src: /icons/dto.svg
     title: DTO
     details: Validated object mapping from raw input. One schema, one immutable DTO — returns a Result instead of throwing.
-  - icon: ⚡
+  - icon:
+      src: /icons/async.svg
     title: Async
     details: Concurrent execution via child processes (proc_open). No extensions required — works on Windows and shared hosting.
-  - icon: 🔥
+  - icon:
+      src: /icons/ci3.svg
     title: CodeIgniter 3 ready
     details: First-class helpers and global aliases for legacy CI3 apps. Adopt incrementally, one controller at a time.
 ---
 
-## Errors as values, not surprises
+## Start where errors already hurt
 
-```php
-use Maybe\Result\Result;
-
-$response = loadUser($id)
-    ->andThen(fn (array $user): Result => chargeSubscription($user))
-    ->map(fn (array $invoice): string => $invoice['number'])
-    ->match(
-        fn (string $number): string => "Invoice {$number} created",
-        fn (string $error): string => "Failed: {$error}"
-    );
-```
-
-Install it with Composer and start with `Schema`, `DTO` and `Result` — no framework coupling, no extensions, no rewrite.
+No framework coupling, no required extensions, no rewrite. Install it and adopt `Schema`, `DTO` and `Result` one boundary at a time.
 
 ```bash
 composer require gabrielalmir/maybe
 ```
+
+Read the [Getting Started guide](/guide/getting-started) or jump straight to [Result](/guide/result) if error handling is what brought you here.
