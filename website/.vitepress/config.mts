@@ -36,7 +36,22 @@ export default defineConfig({
   title: 'Maybe',
   base: '/maybe/',
   lastUpdated: true,
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/maybe/favicon.svg' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:title', content: 'Maybe — Explicit, predictable business logic for PHP' }],
+    [
+      'meta',
+      {
+        property: 'og:description',
+        content: 'Option, Result, Schema, DTO and Async for PHP 7.4+ — typed success and error paths, no exceptions as control flow.'
+      }
+    ],
+    ['meta', { property: 'og:url', content: 'https://gabrielalmir.github.io/maybe/' }],
+    ['meta', { name: 'theme-color', content: '#5B47D6' }]
+  ],
   themeConfig: {
+    logo: '/logo.svg',
     search: { provider: 'local' },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/gabrielalmir/maybe' }
