@@ -52,6 +52,9 @@ As seguintes funções com namespace são carregadas automaticamente:
 
 ## Próximos passos
 
+- [**Tutorial**](/pt/guide/tutorial) — construa um fluxo validado de cadastro de cliente de ponta a ponta
+- [Por que Maybe?](/pt/guide/why-maybe) — o argumento contra `null` e exceções, e como o Maybe se compara
+- [Referência de API](/pt/guide/api-reference) — todas as assinaturas em um lugar
 - [Option](/pt/guide/option) — valores opcionais sem checagens de null
 - [Result](/pt/guide/result) — tratamento de erros como dados
 - [Schema](/pt/guide/schema) — validação e parsing
