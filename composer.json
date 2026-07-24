@@ -2,6 +2,7 @@
     "name": "gabrielalmir/maybe",
     "description": "Functional primitives for PHP: Option and Result types inspired by Rust",
     "type": "library",
+    "homepage": "https://gabrielalmir.github.io/maybe/",
     "license": "MIT",
     "autoload": {
         "psr-4": {
