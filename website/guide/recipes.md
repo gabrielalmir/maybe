@@ -2,6 +2,8 @@
 
 Runnable, self-contained scripts for common problems. Every file lives in [`examples/`](https://github.com/gabrielalmir/maybe/tree/main/examples) in the repository and can be run directly with `php examples/<file>.php` once dependencies are installed (`composer install`).
 
+> Looking for the business context behind these snippets — the risk, the legacy code, why it matters? See [Case Studies](/guide/case-studies) for end-to-end walkthroughs: transactional email, SAP integration, and contract validation.
+
 ## Checkout flow with coupons and payment authorization
 
 `Option` for an optional coupon code, `Result` chaining a discount step into a payment authorization step.
