@@ -40,6 +40,15 @@ final class None extends Option
     }
 
     /**
+     * @param callable(mixed): bool $predicate
+     * @return Option<mixed>
+     */
+    public function filter(callable $predicate): Option
+    {
+        return self::instance();
+    }
+
+    /**
      * @template U
      * @param callable(mixed): Option<U> $fn
      * @return Option<U>

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Maybe\Option;
 
+use Maybe\Exception\UnwrapNoneException;
+use Maybe\Result\Result;
+
 /**
  * @template T
  */
@@ -15,6 +18,14 @@ abstract class Option
      * @return Option<U>
      */
     abstract public function map(callable $fn): Option;
+
+    /**
+     * Keep the value only if the predicate holds; otherwise collapse to None.
+     *
+     * @param callable(T): bool $predicate
+     * @return Option<T>
+     */
+    abstract public function filter(callable $predicate): Option;
 
     /**
      * @template U
@@ -47,6 +58,84 @@ abstract class Option
     final public function isNone(): bool
     {
         return !$this->isSome();
+    }
+
+    /**
+     * Return the value or compute a fallback lazily.
+     *
+     * @param callable(): T $fn
+     * @return T
+     */
+    public function unwrapOrElse(callable $fn)
+    {
+        /** @var callable(T): T $onSome */
+        $onSome = static function ($value) {
+            return $value;
+        };
+
+        return $this->match($onSome, $fn);
+    }
+
+    /**
+     * Return the value or throw with a caller-supplied message.
+     *
+     * @param string $message
+     * @return T
+     */
+    public function expect(string $message)
+    {
+        /** @var callable(T): T $onSome */
+        $onSome = static function ($value) {
+            return $value;
+        };
+
+        $onNone = static function () use ($message) {
+            throw new UnwrapNoneException($message);
+        };
+
+        return $this->match($onSome, $onNone);
+    }
+
+    /**
+     * Convert to a Result, using $error for the None case.
+     *
+     * @template E
+     * @param E $error
+     * @return Result<T,E>
+     */
+    public function okOr($error): Result
+    {
+        /** @var callable(T): Result<T,E> $onSome */
+        $onSome = static function ($value): Result {
+            return Result::ok($value);
+        };
+
+        $onNone = static function () use ($error): Result {
+            return Result::err($error);
+        };
+
+        return $this->match($onSome, $onNone);
+    }
+
+    /**
+     * Convert to a Result, computing the error lazily for the None case.
+     *
+     * @template E
+     * @param callable(): E $fn
+     * @return Result<T,E>
+     */
+    public function okOrElse(callable $fn): Result
+    {
+        /** @var callable(T): Result<T,E> $onSome */
+        $onSome = static function ($value): Result {
+            return Result::ok($value);
+        };
+
+        $onNone = static function () use ($fn): Result {
+            return Result::err($fn());
+        };
+
+        return $this->match($onSome, $onNone);
     }
 
     /**
