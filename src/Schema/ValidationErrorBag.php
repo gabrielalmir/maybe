@@ -4,7 +4,20 @@ declare(strict_types=1);
 
 namespace Maybe\Schema;
 
-final class ValidationErrorBag
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
+use Traversable;
+
+/**
+ * A first-class collection of validation errors (Object Calisthenics rule
+ * 4: it wraps the array and nothing else). It is iterable and countable,
+ * and renders itself for humans (describe/summary) or for serialization
+ * (toArray) instead of exposing the raw list through getters.
+ *
+ * @implements IteratorAggregate<int,ValidationError>
+ */
+final class ValidationErrorBag implements Countable, IteratorAggregate
 {
     /**
      * @var ValidationError[]
@@ -26,10 +39,7 @@ final class ValidationErrorBag
 
     public function withError(ValidationError $error): self
     {
-        $errors = $this->errors;
-        $errors[] = $error;
-
-        return new self($errors);
+        return new self(array_merge($this->errors, [$error]));
     }
 
     public function merge(self $other): self
@@ -39,7 +49,7 @@ final class ValidationErrorBag
 
     public function isEmpty(): bool
     {
-        return count($this->errors) === 0;
+        return $this->errors === [];
     }
 
     public function count(): int
@@ -48,20 +58,26 @@ final class ValidationErrorBag
     }
 
     /**
-     * @return ValidationError[]
+     * @return Traversable<int,ValidationError>
      */
-    public function all(): array
+    public function getIterator(): Traversable
     {
-        return $this->errors;
+        return new ArrayIterator($this->errors);
     }
 
-    public function first(): ?ValidationError
+    /**
+     * One formatted "path: message" line per error, ready to display.
+     *
+     * @return string[]
+     */
+    public function describe(): array
     {
-        if ($this->isEmpty()) {
-            return null;
-        }
-
-        return $this->errors[0];
+        return array_map(
+            static function (ValidationError $error): string {
+                return $error->describedAs();
+            },
+            $this->errors
+        );
     }
 
     /**
@@ -79,23 +95,17 @@ final class ValidationErrorBag
 
     public function summary(): string
     {
-        $first = $this->first();
-
-        if ($first === null) {
+        if ($this->errors === []) {
             return 'Validation failed';
         }
 
-        if ($this->count() === 1) {
-            return sprintf('%s: %s', $first->path(), $first->message());
+        $first = $this->errors[0]->describedAs();
+        $remaining = count($this->errors) - 1;
+
+        if ($remaining === 0) {
+            return $first;
         }
 
-        return sprintf(
-            '%s: %s (and %d more error%s)',
-            $first->path(),
-            $first->message(),
-            $this->count() - 1,
-            ($this->count() - 1) === 1 ? '' : 's'
-        );
+        return sprintf('%s (and %d more error%s)', $first, $remaining, $remaining === 1 ? '' : 's');
     }
 }
-

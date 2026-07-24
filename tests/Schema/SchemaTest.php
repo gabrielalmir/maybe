@@ -66,9 +66,9 @@ it('returns err for invalid date format or bounds', function (): void {
     Assert::assertInstanceOf(ValidationErrorBag::class, $formatErrors);
     Assert::assertInstanceOf(ValidationErrorBag::class, $earlyErrors);
     Assert::assertInstanceOf(ValidationErrorBag::class, $lateErrors);
-    Assert::assertSame('date.format', $formatErrors->first()->code());
-    Assert::assertSame('date.min', $earlyErrors->first()->code());
-    Assert::assertSame('date.max', $lateErrors->first()->code());
+    Assert::assertSame('date.format', $formatErrors->toArray()[0]['code']);
+    Assert::assertSame('date.min', $earlyErrors->toArray()[0]['code']);
+    Assert::assertSame('date.max', $lateErrors->toArray()[0]['code']);
 });
 
 
@@ -97,11 +97,50 @@ it('returns err for invalid enumeration value', function (): void {
     );
 
     Assert::assertInstanceOf(ValidationErrorBag::class, $errors);
-    Assert::assertSame('enum.invalid', $errors->first()->code());
+    Assert::assertSame('enum.invalid', $errors->toArray()[0]['code']);
 });
 
 it('throws when enumeration schema is created with empty values', function (): void {
     $this->expectException(\InvalidArgumentException::class);
 
     Schema::enumeration([]);
+});
+
+it('exposes errors through iteration, describe and toArray', function (): void {
+    $schema = Schema::shape([
+        'name' => Schema::string()->trimmed()->min(1),
+        'age' => Schema::int()->min(18),
+    ]);
+
+    $errors = $schema->safeParse(['name' => ' ', 'age' => 15])->match(
+        static fn (array $v): ?ValidationErrorBag => null,
+        static fn (ValidationErrorBag $e): ValidationErrorBag => $e
+    );
+
+    Assert::assertCount(2, $errors);
+
+    $iterated = [];
+    foreach ($errors as $error) {
+        $iterated[] = $error->describedAs();
+    }
+
+    Assert::assertSame($iterated, $errors->describe());
+
+    $rows = $errors->toArray();
+    Assert::assertSame('$.name', $rows[0]['path']);
+    Assert::assertArrayHasKey('code', $rows[0]);
+    Assert::assertStringContainsString(':', $errors->describe()[0]);
+});
+
+it('reports nested array paths through the value objects', function (): void {
+    $schema = Schema::arrayOf(Schema::shape([
+        'email' => Schema::string()->min(5),
+    ]));
+
+    $errors = $schema->safeParse([['email' => 'ana@x.io'], ['email' => 'no']])->match(
+        static fn (array $v): ?ValidationErrorBag => null,
+        static fn (ValidationErrorBag $e): ValidationErrorBag => $e
+    );
+
+    Assert::assertSame('$[1].email', $errors->toArray()[0]['path']);
 });

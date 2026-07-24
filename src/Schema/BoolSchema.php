@@ -17,7 +17,7 @@ final class BoolSchema extends AbstractSchema
     {
         if (!is_bool($input)) {
             throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'Expected bool', 'type.bool'))
+                ValidationErrorBag::single(new ValidationError(Path::root(), 'Expected bool', 'type.bool'))
             );
         }
 

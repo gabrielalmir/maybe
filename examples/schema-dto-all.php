@@ -144,12 +144,7 @@ foreach (
             );
         },
         static function (ValidationErrorBag $errors): string {
-            $messages = array_map(
-                static fn ($error): string => sprintf('%s => %s', $error->path(), $error->message()),
-                $errors->all()
-            );
-
-            return "ERR:\n- " . implode("\n- ", $messages);
+            return "ERR:\n- " . implode("\n- ", $errors->describe());
         }
     ) . "\n\n";
 }

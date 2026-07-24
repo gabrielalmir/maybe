@@ -1,4 +1,4 @@
-# Maybe (v0.2.2)
+# Maybe (v0.3.0)
 
 📖 **Documentation:** https://gabrielalmir.github.io/maybe/
 

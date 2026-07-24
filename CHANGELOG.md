@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.0]
+
+Object Calisthenics pass over the library, with a matching guide so code written *with* Maybe reads the same way.
+
+### Changed (breaking)
+
+- `ValidationError` and `ValidationErrorBag` no longer expose field getters; they follow "Tell, Don't Ask".
+  - Removed: `ValidationError::path()`, `::message()`, `::code()`; `ValidationErrorBag::all()`, `::first()`.
+  - `ValidationError` now offers `describedAs(): string`, `underField()`, `underIndex()`, and `toArray()`.
+  - `ValidationErrorBag` is now a first-class collection: `Countable` and iterable (`foreach`), with `describe(): string[]` and `toArray()`. `count()`, `summary()`, `isEmpty()`, `withError()`, `merge()` are unchanged.
+  - Build a custom error with a `Path`: `new ValidationError(Path::field('name'), 'message', 'code')` (the constructor takes a `Path`, not a string).
+
+### Migration from 0.2.x
+
+- `$errors->all()` → iterate the bag directly (`foreach ($errors as $error)`) or `$errors->toArray()`.
+- `$error->path()` / `$error->message()` → `$error->describedAs()` (a `"path: message"` line), or `$errors->describe()` for all lines at once.
+- `$errors->first()->code()` → `$errors->toArray()[0]['code']`.
+- `new ValidationError('$.field', $msg, $code)` → `new ValidationError(Path::field('field'), $msg, $code)`.
+
+### Added
+
+- "Object Calisthenics with Maybe" guide (EN + PT) and Object Calisthenics rules in `llms.txt` / `AGENTS.md`.
+- `Path`, `Reason`, `TextLength`, `TextFormat`, `DateBounds` value objects (internal building blocks; `Path` is public for building custom errors).
+
 ## [0.2.2]
 
 ### Added

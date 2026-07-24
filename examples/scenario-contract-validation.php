@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Maybe\Result\Result;
+use Maybe\Schema\Path;
 use Maybe\Schema\Schema;
 use Maybe\Schema\ValidationError;
 use Maybe\Schema\ValidationErrorBag;
@@ -61,7 +62,7 @@ function checkBusinessRules(array $contract): Result
 
     if ($contract['ends_at'] <= $contract['starts_at']) {
         $errors = $errors->withError(
-            new ValidationError('$.ends_at', 'End date must be after the start date', 'contract.invalid_period')
+            new ValidationError(Path::field('ends_at'), 'End date must be after the start date', 'contract.invalid_period')
         );
     }
 
@@ -69,7 +70,7 @@ function checkBusinessRules(array $contract): Result
 
     foreach ($missingClauses as $clause) {
         $errors = $errors->withError(
-            new ValidationError('$.clauses', "Missing mandatory clause: {$clause}", 'contract.missing_clause')
+            new ValidationError(Path::field('clauses'), "Missing mandatory clause: {$clause}", 'contract.missing_clause')
         );
     }
 
@@ -121,8 +122,8 @@ foreach ($contracts as $index => $contract) {
         static function (ValidationErrorBag $errors) use ($index): string {
             $lines = [sprintf('contract #%d: rejected with %d issue(s)', $index, $errors->count())];
 
-            foreach ($errors->all() as $error) {
-                $lines[] = sprintf('  %s: %s', $error->path(), $error->message());
+            foreach ($errors->describe() as $line) {
+                $lines[] = '  ' . $line;
             }
 
             return implode("\n", $lines);

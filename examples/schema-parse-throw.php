@@ -24,7 +24,7 @@ try {
 } catch (ValidationException $e) {
     echo "Falha ao importar colaborador:\n";
 
-    foreach ($e->errors()->all() as $error) {
-        echo sprintf("- %s (%s): %s\n", $error->path(), $error->code(), $error->message());
+    foreach ($e->errors()->toArray() as $error) {
+        echo sprintf("- %s (%s): %s\n", $error['path'], $error['code'], $error['message']);
     }
 }
