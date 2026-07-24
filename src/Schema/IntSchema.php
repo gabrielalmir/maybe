@@ -43,19 +43,19 @@ final class IntSchema extends AbstractSchema
     {
         if (!is_int($input)) {
             throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'Expected int', 'type.int'))
+                ValidationErrorBag::single(new ValidationError(Path::root(), 'Expected int', 'type.int'))
             );
         }
 
         if ($this->min !== null && $input < $this->min) {
             throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', sprintf('Value must be >= %d', $this->min), 'int.min'))
+                ValidationErrorBag::single(new ValidationError(Path::root(), sprintf('Value must be >= %d', $this->min), 'int.min'))
             );
         }
 
         if ($this->max !== null && $input > $this->max) {
             throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', sprintf('Value must be <= %d', $this->max), 'int.max'))
+                ValidationErrorBag::single(new ValidationError(Path::root(), sprintf('Value must be <= %d', $this->max), 'int.max'))
             );
         }
 

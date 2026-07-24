@@ -37,7 +37,7 @@ final class EnumSchema extends AbstractSchema
             throw new ValidationException(
                 ValidationErrorBag::single(
                     new ValidationError(
-                        '$',
+                        Path::root(),
                         sprintf('Expected one of: %s', $this->stringifyAllowedValues()),
                         'enum.invalid'
                     )

@@ -41,7 +41,7 @@ final class ObjectSchema extends AbstractSchema
     {
         if (!is_array($input)) {
             throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'Expected object-like array', 'type.object'))
+                ValidationErrorBag::single(new ValidationError(Path::root(), 'Expected object-like array', 'type.object'))
             );
         }
 
@@ -50,39 +50,25 @@ final class ObjectSchema extends AbstractSchema
 
         foreach ($this->shape as $key => $schema) {
             if (!array_key_exists($key, $input)) {
-                $errors = $errors->withError(new ValidationError('$.' . $key, 'Missing required field', 'object.missing'));
+                $errors = $errors->withError(new ValidationError(Path::root()->underField($key), 'Missing required field', 'object.missing'));
                 continue;
             }
 
             try {
                 $output[$key] = $schema->parse($input[$key]);
             } catch (ValidationException $e) {
-                foreach ($e->errors()->all() as $error) {
-                    $errors = $errors->withError(
-                        new ValidationError(
-                            $this->composePath($key, $error->path()),
-                            $error->message(),
-                            $error->code()
-                        )
-                    );
+                foreach ($e->errors() as $error) {
+                    $errors = $errors->withError($error->underField($key));
                 }
             }
         }
 
+        if ($this->allowUnknown) {
+            $output = $this->copyUnknownInto($input, $output);
+        }
+
         if (!$this->allowUnknown) {
-            foreach ($input as $key => $value) {
-                if (!array_key_exists((string) $key, $this->shape)) {
-                    $errors = $errors->withError(
-                        new ValidationError('$.' . (string) $key, 'Unknown field is not allowed', 'object.unknown')
-                    );
-                }
-            }
-        } else {
-            foreach ($input as $key => $value) {
-                if (!array_key_exists((string) $key, $output)) {
-                    $output[(string) $key] = $value;
-                }
-            }
+            $errors = $errors->merge($this->rejectUnknown($input));
         }
 
         if (!$errors->isEmpty()) {
@@ -92,12 +78,37 @@ final class ObjectSchema extends AbstractSchema
         return $output;
     }
 
-    private function composePath(string $field, string $path): string
+    /**
+     * @param array<mixed,mixed> $input
+     */
+    private function rejectUnknown(array $input): ValidationErrorBag
     {
-        if ($path === '$') {
-            return '$.' . $field;
+        $errors = new ValidationErrorBag();
+
+        foreach ($input as $key => $value) {
+            if (!array_key_exists((string) $key, $this->shape)) {
+                $errors = $errors->withError(
+                    new ValidationError(Path::root()->underField((string) $key), 'Unknown field is not allowed', 'object.unknown')
+                );
+            }
         }
 
-        return '$.' . $field . '.' . ltrim($path, '$.');
+        return $errors;
+    }
+
+    /**
+     * @param array<mixed,mixed> $input
+     * @param array<string,mixed> $output
+     * @return array<string,mixed>
+     */
+    private function copyUnknownInto(array $input, array $output): array
+    {
+        foreach ($input as $key => $value) {
+            if (!array_key_exists((string) $key, $output)) {
+                $output[(string) $key] = $value;
+            }
+        }
+
+        return $output;
     }
 }

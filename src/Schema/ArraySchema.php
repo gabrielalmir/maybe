@@ -31,7 +31,7 @@ final class ArraySchema extends AbstractSchema
     {
         if (!is_array($input)) {
             throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'Expected array', 'type.array'))
+                ValidationErrorBag::single(new ValidationError(Path::root(), 'Expected array', 'type.array'))
             );
         }
 
@@ -42,14 +42,8 @@ final class ArraySchema extends AbstractSchema
             try {
                 $parsed[] = $this->itemSchema->parse($value);
             } catch (ValidationException $e) {
-                foreach ($e->errors()->all() as $error) {
-                    $errors = $errors->withError(
-                        new ValidationError(
-                            sprintf('$[%d]%s', $index, $this->normalizePath($error->path())),
-                            $error->message(),
-                            $error->code()
-                        )
-                    );
+                foreach ($e->errors() as $error) {
+                    $errors = $errors->withError($error->underIndex($index));
                 }
             }
         }
@@ -59,16 +53,5 @@ final class ArraySchema extends AbstractSchema
         }
 
         return $parsed;
-    }
-
-    private function normalizePath(string $path): string
-    {
-        if ($path === '$') {
-            return '';
-        }
-
-        $relativePath = ltrim($path, '$');
-
-        return strpos($relativePath, '[') === 0 ? $relativePath : '.' . ltrim($relativePath, '.');
     }
 }

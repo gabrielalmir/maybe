@@ -4,43 +4,44 @@ declare(strict_types=1);
 
 namespace Maybe\Schema;
 
+/**
+ * A single validation failure: where it happened (Path) and why (Reason).
+ *
+ * Following Object Calisthenics "Tell, Don't Ask", this object renders
+ * itself (describedAs / toArray) and re-parents itself (underField /
+ * underIndex) instead of exposing its internals through getters.
+ */
 final class ValidationError
 {
     /**
-     * @var string
+     * @var Path
      */
     private $path;
 
     /**
-     * @var string
+     * @var Reason
      */
-    private $message;
+    private $reason;
 
-    /**
-     * @var string
-     */
-    private $code;
-
-    public function __construct(string $path, string $message, string $code = 'invalid')
+    public function __construct(Path $path, string $message, string $code = 'invalid')
     {
         $this->path = $path;
-        $this->message = $message;
-        $this->code = $code;
+        $this->reason = new Reason($message, $code);
     }
 
-    public function path(): string
+    public function underField(string $field): self
     {
-        return $this->path;
+        return $this->rewrap($this->path->underField($field));
     }
 
-    public function message(): string
+    public function underIndex(int $index): self
     {
-        return $this->message;
+        return $this->rewrap($this->path->underIndex($index));
     }
 
-    public function code(): string
+    public function describedAs(): string
     {
-        return $this->code;
+        return $this->path->toString() . ': ' . $this->reason->describedAs();
     }
 
     /**
@@ -48,11 +49,20 @@ final class ValidationError
      */
     public function toArray(): array
     {
+        $reason = $this->reason->toArray();
+
         return [
-            'path' => $this->path,
-            'message' => $this->message,
-            'code' => $this->code,
+            'path' => $this->path->toString(),
+            'message' => $reason['message'],
+            'code' => $reason['code'],
         ];
     }
-}
 
+    private function rewrap(Path $path): self
+    {
+        $clone = clone $this;
+        $clone->path = $path;
+
+        return $clone;
+    }
+}

@@ -10,51 +10,39 @@ namespace Maybe\Schema;
 final class StringSchema extends AbstractSchema
 {
     /**
-     * @var bool
+     * @var TextLength
      */
-    private $trim;
+    private $length;
 
     /**
-     * @var int|null
+     * @var TextFormat
      */
-    private $minLength;
+    private $format;
 
-    /**
-     * @var int|null
-     */
-    private $maxLength;
-
-    /**
-     * @var string|null
-     */
-    private $pattern;
-
-    public function __construct(bool $trim = false, ?int $minLength = null, ?int $maxLength = null, ?string $pattern = null)
+    public function __construct(?TextLength $length = null, ?TextFormat $format = null)
     {
-        $this->trim = $trim;
-        $this->minLength = $minLength;
-        $this->maxLength = $maxLength;
-        $this->pattern = $pattern;
+        $this->length = $length ?? TextLength::any();
+        $this->format = $format ?? TextFormat::raw();
     }
 
     public function trimmed(): self
     {
-        return new self(true, $this->minLength, $this->maxLength, $this->pattern);
+        return new self($this->length, $this->format->trimmed());
     }
 
     public function min(int $minLength): self
     {
-        return new self($this->trim, $minLength, $this->maxLength, $this->pattern);
+        return new self($this->length->withMin($minLength), $this->format);
     }
 
     public function max(int $maxLength): self
     {
-        return new self($this->trim, $this->minLength, $maxLength, $this->pattern);
+        return new self($this->length->withMax($maxLength), $this->format);
     }
 
     public function regex(string $pattern): self
     {
-        return new self($this->trim, $this->minLength, $this->maxLength, $pattern);
+        return new self($this->length, $this->format->withPattern($pattern));
     }
 
     /**
@@ -63,57 +51,25 @@ final class StringSchema extends AbstractSchema
      */
     public function parse($input): string
     {
-        if (!is_string($input)) {
-            throw new ValidationException(
-                ValidationErrorBag::single(new ValidationError('$', 'Expected string', 'type.string'))
-            );
-        }
+        $this->rejectNonString($input);
 
-        $value = $this->trim ? trim($input) : $input;
+        $value = $this->format->normalize($input);
 
-        $length = $this->length($value);
-
-        if ($this->minLength !== null && $length < $this->minLength) {
-            throw new ValidationException(
-                ValidationErrorBag::single(
-                    new ValidationError('$', sprintf('String must have at least %d characters', $this->minLength), 'string.min')
-                )
-            );
-        }
-
-        if ($this->maxLength !== null && $length > $this->maxLength) {
-            throw new ValidationException(
-                ValidationErrorBag::single(
-                    new ValidationError('$', sprintf('String must have at most %d characters', $this->maxLength), 'string.max')
-                )
-            );
-        }
-
-        if ($this->pattern !== null) {
-            $matched = preg_match($this->pattern, $value);
-
-            if ($matched === false) {
-                throw new ValidationException(
-                    ValidationErrorBag::single(new ValidationError('$', 'Invalid regex pattern in schema', 'string.pattern.invalid'))
-                );
-            }
-
-            if ($matched !== 1) {
-                throw new ValidationException(
-                    ValidationErrorBag::single(new ValidationError('$', 'String does not match expected format', 'string.pattern'))
-                );
-            }
-        }
+        $this->length->validate($value);
+        $this->format->validate($value);
 
         return $value;
     }
 
-    private function length(string $value): int
+    /**
+     * @param mixed $input
+     */
+    private function rejectNonString($input): void
     {
-        if (function_exists('mb_strlen')) {
-            return mb_strlen($value, 'UTF-8');
+        if (!is_string($input)) {
+            throw new ValidationException(
+                ValidationErrorBag::single(new ValidationError(Path::root(), 'Expected string', 'type.string'))
+            );
         }
-
-        return strlen($value);
     }
 }
