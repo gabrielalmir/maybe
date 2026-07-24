@@ -40,17 +40,22 @@ $result->match(
 
 ## Relatório de erros
 
-`ValidationErrorBag` coleta todos os erros com seus caminhos:
+`ValidationErrorBag` é uma coleção de primeira classe: é contável, iterável e se renderiza (Tell, Don't Ask) em vez de expor a lista crua por getters.
 
 ```php
-$errors->count();
-$errors->first();      // ?ValidationError
-$errors->all();        // ValidationError[]
-$errors->toArray();    // [['path' => 'age', 'message' => '...', 'code' => '...'], ...]
-$errors->summary();    // "age: must be at least 18 (and 2 more errors)"
+$errors->count();               // int (Countable)
+$errors->isEmpty();             // bool
+
+foreach ($errors as $error) {   // iterável
+    echo $error->describedAs(); // "$.age: Value must be >= 18"
+}
+
+$errors->describe();   // ['$.age: Value must be >= 18', ...] — uma linha por erro
+$errors->summary();    // "$.age: Value must be >= 18 (and 2 more errors)"
+$errors->toArray();    // [['path' => '$.age', 'message' => '...', 'code' => '...'], ...]
 ```
 
-Estruturas aninhadas reportam caminhos completos (ex.: `items.2.email`), o que torna respostas de erro de API precisas.
+Use `describe()` para linhas legíveis e `toArray()` na fronteira de serialização (ex.: uma resposta JSON de API). Estruturas aninhadas reportam caminhos completos (ex.: `$[2].email`), o que torna respostas de erro de API precisas.
 
 ## Reuso e imutabilidade
 

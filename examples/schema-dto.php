@@ -99,12 +99,7 @@ foreach (
             );
         },
         static function (ValidationErrorBag $errors): string {
-            $messages = array_map(
-                static fn ($error): string => sprintf('%s => %s', $error->path(), $error->message()),
-                $errors->all()
-            );
-
-            return "Cadastro invalido:\n- " . implode("\n- ", $messages);
+            return "Cadastro invalido:\n- " . implode("\n- ", $errors->describe());
         }
     ) . "\n\n";
 }

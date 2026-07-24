@@ -68,6 +68,24 @@ The `ci.yml` workflow requires a `test-change` label on any PR that modifies fil
 - Static closures (`static function`, `static fn`) wherever `$this` isn't needed.
 - No comments explaining *what* the code does — only *why*, when the reason isn't obvious from the code itself.
 
+## Object Calisthenics standard
+
+`src/` follows Object Calisthenics. When adding or changing code here, keep it that way:
+
+1. **One level of indentation per method.** Extract a private method instead of nesting; a leaf schema's `parse()` delegates each check to a collaborator (see `StringSchema` → `TextLength`/`TextFormat`, `DateSchema` → `DateBounds`).
+2. **No `else`.** Use guard clauses, early returns, or `match()` on Option/Result.
+3. **Wrap primitives.** Group related scalars into a value object (see `Path`, `Reason`, `TextLength`, `TextFormat`, `DateBounds`).
+4. **First-class collections.** A class wrapping an array holds nothing else (see `ValidationErrorBag`).
+5. **No getters** on domain/value objects — they render themselves (`describedAs()`, `describe()`, `summary()`) or serialize (`toArray()` is the one accepted boundary). `Option::unwrap()`/`Result::unwrap()` are the intentional core API, not getters.
+6. **At most two instance variables per class.** If a class needs a third scalar, wrap two of them into a value object first.
+7. **Small entities**, **no abbreviations**.
+
+Two deliberate, documented exceptions (do not "fix" these):
+- The **fluent Maybe chain** (`->map()->andThen()->match()`) is allowed and encouraged — same-type returns are not a Law-of-Demeter violation, so the "one dot per line" rule does not apply to it.
+- `toArray()` on value objects/collections is the accepted **serialization boundary**; it is the only place internals become a plain array.
+
+There is no automated OC linter in CI yet — treat this section as the review checklist. If you add one, wire it into `composer lint` and keep it PHP 7.4-compatible.
+
 ## Don't
 
 - Don't add a web framework dependency, an HTTP client, or a database driver — this library is intentionally framework-agnostic.

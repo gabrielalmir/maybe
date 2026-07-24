@@ -28,6 +28,15 @@ final class Path
     }
 
     /**
+     * A top-level field path, e.g. Path::field('email') is "$.email".
+     * Convenience for building custom validation errors in business rules.
+     */
+    public static function field(string $name): self
+    {
+        return self::root()->underField($name);
+    }
+
+    /**
      * Re-parent this path under an object field, e.g. "$" under "email"
      * becomes "$.email"; "$.city" under "address" becomes "$.address.city".
      */

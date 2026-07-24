@@ -35,8 +35,8 @@ echo $result->match(
     static function (ValidationErrorBag $errors): string {
         $lines = ['Import failed with ' . $errors->count() . ' error(s):'];
 
-        foreach ($errors->all() as $error) {
-            $lines[] = sprintf('  row %s: %s', $error->path(), $error->message());
+        foreach ($errors->describe() as $line) {
+            $lines[] = '  ' . $line;
         }
 
         return implode("\n", $lines);

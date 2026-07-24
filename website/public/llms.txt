@@ -34,7 +34,7 @@ Builders: `Schema::string()`, `Schema::int()`, `Schema::bool()`, `Schema::date()
 
 String modifiers: `->trimmed()`, `->min(int)`, `->max(int)`, `->regex(string)`. Int modifiers: `->min(int)`, `->max(int)`. Every modifier returns a new instance (immutable) — safe to share a base schema across multiple shapes.
 
-Entry point: `$schema->safeParse($input): Result<mixed, ValidationErrorBag>` — never throws. `ValidationErrorBag`: `->count()`, `->first(): ?ValidationError`, `->all(): ValidationError[]`, `->toArray()`, `->summary(): string`. `ValidationError`: `->path()`, `->message()`, `->code()`. Nested/array errors report JSONPath-like paths, e.g. `$.email`, `$[1].email`.
+Entry point: `$schema->safeParse($input): Result<mixed, ValidationErrorBag>` — never throws. `ValidationErrorBag` is a first-class collection (Countable + iterable), Tell-Don't-Ask: `->count()`, `->isEmpty()`, `foreach ($bag as $error)`, `->describe(): string[]` (formatted "path: message" lines), `->summary(): string`, `->toArray(): array[]` (serialization boundary, each `['path'=>,'message'=>,'code'=>]`). Individual `ValidationError`: `->describedAs(): string`, `->toArray()`, `->underField(string)`, `->underIndex(int)`. There are NO `->path()`/`->message()`/`->code()`/`->all()`/`->first()` getters. Build a custom error with `new ValidationError(Path::field('name'), 'message', 'code')`. Nested/array errors report JSONPath-like paths, e.g. `$.email`, `$[1].email`.
 
 ### `Maybe\DTO\DTO`
 
@@ -94,6 +94,20 @@ $result = findUser($id)->okOr('user_not_found');
 - Target PHP >= 7.4 syntax unless the user's `composer.json` clearly requires a higher minimum — no constructor property promotion, no enums, no named arguments.
 - `DTO::fromArray()` and `Schema::safeParse()` never throw; only `DTO::parse()` throws.
 
+## Readability & Object Calisthenics rules for generated code
+
+Generate code that reads well by leaning on what Maybe already gives you. These rules make the output respect Object Calisthenics without extra ceremony:
+
+- Return `Option`, never `null`; a caller then handles absence with `match()`/`unwrapOr()`. (No null checks.)
+- Return `Result` for expected failures, never `false`/error-code/throw; handle with `match()`. (No error-code sentinels.)
+- Do not use `else`. Prefer `match()` on Option/Result, early returns, or guard clauses. Never nest an `if` inside an `if`.
+- Wrap related primitives in a small value object or a `DTO` instead of passing bare arrays/strings around; parse untrusted input with `Schema` at the boundary.
+- Tell, Don't Ask: don't read `->path()`/`->message()` off a validation error (they don't exist). Iterate the bag or call `->describe()` / `->describedAs()`; use `->toArray()` only when serializing.
+- Keep methods at one level of indentation and functions/classes small; extract a named helper instead of nesting.
+- Don't abbreviate names.
+- Deliberate exception: fluent Maybe chains (`->map()->andThen()->match()`) are encouraged and do NOT violate the "one dot per line" rule — each call returns a new object of the same type, not a reach through unrelated objects.
+- See the full guide: https://gabrielalmir.github.io/maybe/guide/object-calisthenics
+
 ## Full documentation
 
 - Getting Started: https://gabrielalmir.github.io/maybe/guide/getting-started
@@ -103,6 +117,7 @@ $result = findUser($id)->okOr('user_not_found');
 - DTO: https://gabrielalmir.github.io/maybe/guide/dto
 - Async: https://gabrielalmir.github.io/maybe/guide/async
 - Recipes (common solutions): https://gabrielalmir.github.io/maybe/guide/recipes
+- Object Calisthenics with Maybe: https://gabrielalmir.github.io/maybe/guide/object-calisthenics
 - CodeIgniter 3: https://gabrielalmir.github.io/maybe/guide/codeigniter-3
 - Incremental Migration: https://gabrielalmir.github.io/maybe/guide/migration
 - Source: https://github.com/gabrielalmir/maybe

@@ -120,13 +120,13 @@ function checkBusinessRules(array $contract): Result
 
     if ($contract['ends_at'] <= $contract['starts_at']) {
         $errors = $errors->withError(
-            new ValidationError('$.ends_at', 'End date must be after the start date', 'contract.invalid_period')
+            new ValidationError(Path::field('ends_at'), 'End date must be after the start date', 'contract.invalid_period')
         );
     }
 
     foreach (array_diff(MANDATORY_CLAUSES, $contract['clauses']) as $clause) {
         $errors = $errors->withError(
-            new ValidationError('$.clauses', "Missing mandatory clause: {$clause}", 'contract.missing_clause')
+            new ValidationError(Path::field('clauses'), "Missing mandatory clause: {$clause}", 'contract.missing_clause')
         );
     }
 
@@ -144,11 +144,7 @@ Como os dois estágios retornam `Result<array, ValidationErrorBag>`, quem chama 
 $result->match(
     fn (array $valid): string => "aprovado (valor: {$valid['value_in_cents']} centavos)",
     function (ValidationErrorBag $errors): string {
-        $lines = [];
-        foreach ($errors->all() as $error) {
-            $lines[] = "{$error->path()}: {$error->message()}";
-        }
-        return implode("\n", $lines);
+        return implode("\n", $errors->describe());
     }
 );
 ```

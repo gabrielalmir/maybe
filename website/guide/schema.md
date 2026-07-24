@@ -40,17 +40,22 @@ $result->match(
 
 ## Error reporting
 
-`ValidationErrorBag` collects every error with its path:
+`ValidationErrorBag` is a first-class collection: it is countable, iterable, and renders itself (Tell, Don't Ask) instead of exposing the raw list through getters.
 
 ```php
-$errors->count();
-$errors->first();      // ?ValidationError
-$errors->all();        // ValidationError[]
-$errors->toArray();    // [['path' => 'age', 'message' => '...', 'code' => '...'], ...]
-$errors->summary();    // "age: must be at least 18 (and 2 more errors)"
+$errors->count();               // int (Countable)
+$errors->isEmpty();             // bool
+
+foreach ($errors as $error) {   // iterable
+    echo $error->describedAs(); // "$.age: Value must be >= 18"
+}
+
+$errors->describe();   // ['$.age: Value must be >= 18', ...] — one line per error
+$errors->summary();    // "$.age: Value must be >= 18 (and 2 more errors)"
+$errors->toArray();    // [['path' => '$.age', 'message' => '...', 'code' => '...'], ...]
 ```
 
-Nested structures report full paths (e.g. `items.2.email`), which makes API error responses precise.
+Use `describe()` for human-readable lines, and `toArray()` at the serialization boundary (e.g. a JSON API response). Nested structures report full paths (e.g. `$[2].email`), which makes API error responses precise.
 
 ## Reuse and immutability
 
