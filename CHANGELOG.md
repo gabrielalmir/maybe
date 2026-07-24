@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.2]
+
+### Added
+
+- `Result::andThen()` and `Result::orElse()` for chaining fallible operations without manual `match`.
+- `Result::unwrapOr()`, `Result::unwrapOrElse()`, and `Result::expect()` for ergonomic error recovery.
+- `Result::okOption()` and `Result::errOption()` for converting Result to Option.
+- `Option::filter()` for predicative filtering of values.
+- `Option::unwrapOrElse()`, `Option::expect()`, `Option::okOr()`, and `Option::okOrElse()` for flexible unwrapping and Result conversion.
+
+### Fixed
+
+- `Some::map()` now returns `None` when the callback returns `null`, instead of throwing an exception (consistent with `Option::fromNullable` semantics).
+
+### Changed
+
+- Removed hardcoded `version` field from `composer.json` (version is now derived from git tags).
+
 ## [0.2.1]
 
 ### Added

@@ -1,4 +1,4 @@
-# Maybe (v0.2.1)
+# Maybe (v0.2.2)
 
 `Maybe` is a PHP library for explicit and predictable business logic.
 
@@ -58,8 +58,10 @@ Main methods:
 
 - `map(callable $fn): Option`
 - `flatMap(callable $fn): Option`
+- `filter(callable $predicate): Option`
 - `match(callable $onSome, callable $onNone)`
-- `unwrap()`, `unwrapOr($default)`
+- `unwrap()`, `unwrapOr($default)`, `unwrapOrElse(callable)`, `expect(string)`
+- `okOr($error): Result`, `okOrElse(callable): Result`
 - `isSome()`, `isNone()`
 
 ### Result
@@ -86,8 +88,11 @@ Main methods:
 
 - `map(callable $fn): Result`
 - `mapErr(callable $fn): Result`
+- `andThen(callable $fn): Result`
+- `orElse(callable $fn): Result`
 - `match(callable $onOk, callable $onErr)`
-- `unwrap()`, `unwrapErr()`
+- `unwrap()`, `unwrapErr()`, `unwrapOr($default)`, `unwrapOrElse(callable)`, `expect(string)`
+- `okOption(): Option`, `errOption(): Option`
 - `isOk()`, `isErr()`
 
 ### Schema
