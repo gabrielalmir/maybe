@@ -1,6 +1,6 @@
 # API Reference
 
-Complete signatures for every public type, current as of **0.3.0**. For prose and examples, follow the per-module guides; this page is the quick lookup.
+Complete signatures for every public type, current as of **0.4.0**. For prose and examples, follow the per-module guides; this page is the quick lookup.
 
 ## Option&lt;T&gt;
 
@@ -64,7 +64,7 @@ Complete signatures for every public type, current as of **0.3.0**. For prose an
 
 **Entry points (all schemas):** `->safeParse($input): Result<T, ValidationErrorBag>` (never throws) and `->parse($input): T` (throws `ValidationException`). `->transform(callable): SchemaInterface`.
 
-## Validation errors (0.3.0)
+## Validation errors (0.4.0)
 
 Tell-Don't-Ask value objects — there are **no** `path()`, `message()`, `code()`, `all()`, or `first()` getters.
 
@@ -110,9 +110,19 @@ Tell-Don't-Ask value objects — there are **no** `path()`, `message()`, `code()
 | `Async::setDefaultTempDir` | `setDefaultTempDir(string $tempDir): void` | Override where worker temp files are written. |
 | `Async::setDefaultTimeout` | `setDefaultTimeout(?float $seconds): void` | Default per-task timeout when `options['timeout']` is omitted. |
 | `Async::setDefaultPollInterval` | `setDefaultPollInterval(int $microseconds): void` | Default polling interval used while waiting on a future. |
+| `Async::setDefaultMaxInputBytes` | `setDefaultMaxInputBytes(?int $bytes): void` | Default serialized input limit; `null` disables it. |
+| `Async::setDefaultMaxOutputBytes` | `setDefaultMaxOutputBytes(?int $bytes): void` | Default serialized output limit; `null` disables it. |
 | `AsyncFuture` | `->then(fn)`, `->catch(fn)`, `->finally(fn)` | Register callbacks. |
 | | `->resolve()` | Block until done (or timeout). |
 | | `->pending(): bool`, `->cancel()` | Non-blocking check / kill the process. |
+
+Async size options are `max_input_bytes` (16 MiB by default), `max_output_bytes`
+(64 MiB by default), and `include_remote_trace` (disabled by default). A size
+limit can be set to `null` for a trusted, explicitly bounded workload.
+
+`Maybe\Async\Exception\PayloadTooLargeException` reports which IPC direction
+exceeded its configured limit. `TaskFailedException::remoteTrace()` is empty by
+default; enable `include_remote_trace` only in trusted diagnostics.
 
 ## Global helper functions
 

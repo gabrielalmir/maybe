@@ -45,12 +45,12 @@ final class ObjectSchema extends AbstractSchema
             );
         }
 
-        $errors = new ValidationErrorBag();
+        $errorList = [];
         $output = [];
 
         foreach ($this->shape as $key => $schema) {
             if (!array_key_exists($key, $input)) {
-                $errors = $errors->withError(new ValidationError(Path::root()->underField($key), 'Missing required field', 'object.missing'));
+                $errorList[] = new ValidationError(Path::root()->underField($key), 'Missing required field', 'object.missing');
                 continue;
             }
 
@@ -58,7 +58,7 @@ final class ObjectSchema extends AbstractSchema
                 $output[$key] = $schema->parse($input[$key]);
             } catch (ValidationException $e) {
                 foreach ($e->errors() as $error) {
-                    $errors = $errors->withError($error->underField($key));
+                    $errorList[] = $error->underField($key);
                 }
             }
         }
@@ -68,11 +68,13 @@ final class ObjectSchema extends AbstractSchema
         }
 
         if (!$this->allowUnknown) {
-            $errors = $errors->merge($this->rejectUnknown($input));
+            foreach ($this->rejectUnknown($input) as $error) {
+                $errorList[] = $error;
+            }
         }
 
-        if (!$errors->isEmpty()) {
-            throw new ValidationException($errors);
+        if ($errorList !== []) {
+            throw new ValidationException(new ValidationErrorBag($errorList));
         }
 
         return $output;
@@ -83,17 +85,15 @@ final class ObjectSchema extends AbstractSchema
      */
     private function rejectUnknown(array $input): ValidationErrorBag
     {
-        $errors = new ValidationErrorBag();
+        $errorList = [];
 
         foreach ($input as $key => $value) {
             if (!array_key_exists((string) $key, $this->shape)) {
-                $errors = $errors->withError(
-                    new ValidationError(Path::root()->underField((string) $key), 'Unknown field is not allowed', 'object.unknown')
-                );
+                $errorList[] = new ValidationError(Path::root()->underField((string) $key), 'Unknown field is not allowed', 'object.unknown');
             }
         }
 
-        return $errors;
+        return new ValidationErrorBag($errorList);
     }
 
     /**

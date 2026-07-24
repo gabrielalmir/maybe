@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Maybe\Async;
 
 use Maybe\Async\Exception\CancelledException;
+use Maybe\Async\Exception\PayloadTooLargeException;
 use Maybe\Async\Exception\TaskFailedException;
 use Maybe\Async\Exception\TimeoutException;
 use RuntimeException;
@@ -25,10 +26,13 @@ class AsyncFuture
     private $outputFile;
 
     /** @var string */
-    private $workerFile;
+    private $secret;
 
     /** @var string|null */
     private $runDir;
+
+    /** @var int|null */
+    private $maxOutputBytes;
 
     /** @var float|null */
     private $timeoutSeconds;
@@ -73,14 +77,15 @@ class AsyncFuture
      * @param resource $process
      * @param array<int,resource> $pipes
      */
-    public function __construct($process, array $pipes, string $inputFile, string $outputFile, string $workerFile, ?float $timeoutSeconds, int $pollIntervalMicros, ?string $runDir = null)
+    public function __construct($process, array $pipes, string $inputFile, string $outputFile, string $workerFile, ?float $timeoutSeconds, int $pollIntervalMicros, ?string $runDir = null, ?string $secret = null, ?int $maxOutputBytes = null)
     {
         $this->process = $process;
         $this->pipes = $pipes;
         $this->inputFile = $inputFile;
         $this->outputFile = $outputFile;
-        $this->workerFile = $workerFile;
+        $this->secret = $secret ?? '';
         $this->runDir = $runDir;
+        $this->maxOutputBytes = $maxOutputBytes;
         $this->timeoutSeconds = $timeoutSeconds;
         $this->pollIntervalMicros = $pollIntervalMicros > 0 ? $pollIntervalMicros : 10000;
         $this->startedAt = microtime(true);
@@ -97,21 +102,27 @@ class AsyncFuture
 
     public function then(callable $callback): self
     {
-        $this->thenCallbacks[] = $callback;
+        if (!$this->finalized) {
+            $this->thenCallbacks[] = $callback;
+        }
 
         return $this;
     }
 
     public function catch(callable $callback): self
     {
-        $this->catchCallbacks[] = $callback;
+        if (!$this->finalized) {
+            $this->catchCallbacks[] = $callback;
+        }
 
         return $this;
     }
 
     public function finally(callable $callback): self
     {
-        $this->finallyCallbacks[] = $callback;
+        if (!$this->finalized) {
+            $this->finallyCallbacks[] = $callback;
+        }
 
         return $this;
     }
@@ -123,13 +134,12 @@ class AsyncFuture
         }
 
         $this->enforceTimeout();
-
         if ($this->settled) {
             return false;
         }
 
         $status = proc_get_status($this->process);
-        if ($status['running'] === false) {
+        if (!is_array($status) || $status['running'] === false) {
             $this->collectOutcome();
         }
 
@@ -142,15 +152,9 @@ class AsyncFuture
             return;
         }
 
-        $status = proc_get_status($this->process);
-        if ($status['running'] === true) {
-            proc_terminate($this->process);
-        }
-
+        $this->terminateProcess();
         $this->rawError = new CancelledException('Async task was cancelled');
         $this->settled = true;
-
-        $this->cleanupProcess();
         $this->cleanupFiles();
     }
 
@@ -171,9 +175,15 @@ class AsyncFuture
 
         $value = $this->rawValue;
         $error = $this->rawError;
+        $thenCallbacks = $this->thenCallbacks;
+        $catchCallbacks = $this->catchCallbacks;
+        $finallyCallbacks = $this->finallyCallbacks;
+        $this->thenCallbacks = [];
+        $this->catchCallbacks = [];
+        $this->finallyCallbacks = [];
 
         if ($error === null) {
-            foreach ($this->thenCallbacks as $callback) {
+            foreach ($thenCallbacks as $callback) {
                 try {
                     $value = $callback($value);
                 } catch (Throwable $e) {
@@ -184,7 +194,7 @@ class AsyncFuture
         }
 
         if ($error !== null) {
-            foreach ($this->catchCallbacks as $callback) {
+            foreach ($catchCallbacks as $callback) {
                 try {
                     $candidate = $callback($error);
                 } catch (Throwable $e) {
@@ -203,7 +213,7 @@ class AsyncFuture
             }
         }
 
-        foreach ($this->finallyCallbacks as $callback) {
+        foreach ($finallyCallbacks as $callback) {
             try {
                 $callback();
             } catch (Throwable $e) {
@@ -216,6 +226,12 @@ class AsyncFuture
         $this->finalized = true;
         $this->finalValue = $value;
         $this->finalError = $error;
+        $this->thenCallbacks = [];
+        $this->catchCallbacks = [];
+        $this->finallyCallbacks = [];
+        $this->rawValue = null;
+        $this->rawError = null;
+        $this->secret = '';
 
         if ($error !== null) {
             throw $error;
@@ -228,13 +244,12 @@ class AsyncFuture
     {
         while (!$this->settled) {
             $this->enforceTimeout();
-
             if ($this->settled) {
                 break;
             }
 
             $status = proc_get_status($this->process);
-            if ($status['running'] === false) {
+            if (!is_array($status) || $status['running'] === false) {
                 $this->collectOutcome();
                 break;
             }
@@ -253,15 +268,9 @@ class AsyncFuture
             return;
         }
 
-        $status = proc_get_status($this->process);
-        if ($status['running'] === true) {
-            proc_terminate($this->process);
-        }
-
+        $this->terminateProcess();
         $this->rawError = new TimeoutException('Async task exceeded timeout of ' . $this->timeoutSeconds . ' second(s)');
         $this->settled = true;
-
-        $this->cleanupProcess();
         $this->cleanupFiles();
     }
 
@@ -271,24 +280,26 @@ class AsyncFuture
             return;
         }
 
-        $stderr = $this->readPipe(2);
         $this->cleanupProcess();
-
         if (!is_file($this->outputFile)) {
-            $message = 'Async task finished without output file';
-            if ($stderr !== '') {
-                $message .= ': ' . trim($stderr);
-            }
-
-            $this->rawError = new TaskFailedException($message);
+            $this->rawError = new TaskFailedException('Async task finished without output file');
             $this->settled = true;
             $this->cleanupFiles();
 
             return;
         }
 
-        $json = file_get_contents($this->outputFile);
-        if ($json === false || $json === '') {
+        $size = @filesize($this->outputFile);
+        if ($this->maxOutputBytes !== null && $size !== false && $size > $this->maxOutputBytes) {
+            $this->rawError = new PayloadTooLargeException('output', $this->maxOutputBytes);
+            $this->settled = true;
+            $this->cleanupFiles();
+
+            return;
+        }
+
+        $encoded = file_get_contents($this->outputFile);
+        if ($encoded === false || $encoded === '') {
             $this->rawError = new TaskFailedException('Async task returned empty output');
             $this->settled = true;
             $this->cleanupFiles();
@@ -296,36 +307,59 @@ class AsyncFuture
             return;
         }
 
-        /** @var array{ok:bool,result?:string,error?:array{class:string,message:string,code:int,trace:string}}|null $decoded */
-        $decoded = json_decode($json, true);
-        if (!is_array($decoded) || !array_key_exists('ok', $decoded)) {
-            $this->rawError = new TaskFailedException('Async task returned invalid JSON output');
-            $this->settled = true;
-            $this->cleanupFiles();
-
-            return;
-        }
-
-        if ($decoded['ok'] === true) {
-            $serialized = isset($decoded['result']) ? base64_decode((string) $decoded['result'], true) : false;
-            if ($serialized === false) {
-                $this->rawError = new TaskFailedException('Async task returned invalid encoded result');
-            } else {
-                $this->rawValue = unserialize($serialized);
+        try {
+            $decodedValue = Ipc::decode($encoded, $this->secret);
+            if (!is_array($decodedValue) || !array_key_exists('ok', $decodedValue)) {
+                throw new RuntimeException('Async task returned invalid output envelope');
             }
-        } else {
-            /** @var array<string,mixed> $error */
-            $error = isset($decoded['error']) ? (array) $decoded['error'] : [];
-            $message = isset($error['message']) ? (string) $error['message'] : 'Unknown async task error';
-            $class = isset($error['class']) ? (string) $error['class'] : 'RuntimeException';
-            $code = isset($error['code']) ? (int) $error['code'] : 1;
-            $trace = isset($error['trace']) ? (string) $error['trace'] : '';
 
-            $this->rawError = new TaskFailedException($message, $class, $code, $trace);
+            /** @var array{ok:bool,result?:mixed,error?:array<string,mixed>} $decoded */
+            $decoded = $decodedValue;
+
+            if ($decoded['ok'] === true) {
+                $this->rawValue = $decoded['result'] ?? null;
+            } else {
+                $error = isset($decoded['error']) && is_array($decoded['error']) ? $decoded['error'] : [];
+                $message = isset($error['message']) ? (string) $error['message'] : 'Unknown async task error';
+                $class = isset($error['class']) ? (string) $error['class'] : 'RuntimeException';
+                $code = isset($error['code']) ? (int) $error['code'] : 1;
+                $trace = isset($error['trace']) ? (string) $error['trace'] : '';
+                $direction = isset($error['direction']) ? (string) $error['direction'] : '';
+                $limit = isset($error['limit']) ? (int) $error['limit'] : 0;
+
+                $this->rawError = $class === PayloadTooLargeException::class && $direction !== '' && $limit > 0
+                    ? new PayloadTooLargeException($direction, $limit)
+                    : new TaskFailedException($message, $class, $code, $trace);
+            }
+        } catch (Throwable $e) {
+            $this->rawError = $e instanceof TaskFailedException ? $e : new TaskFailedException($e->getMessage());
         }
 
         $this->settled = true;
         $this->cleanupFiles();
+    }
+
+    private function terminateProcess(): void
+    {
+        if ($this->cleaned) {
+            return;
+        }
+
+        $status = proc_get_status($this->process);
+        if (is_array($status) && $status['running'] === true) {
+            @proc_terminate($this->process);
+            $deadline = microtime(true) + 0.1;
+            do {
+                usleep(10000);
+                $status = proc_get_status($this->process);
+            } while (is_array($status) && $status['running'] === true && microtime(true) < $deadline);
+
+            if (PHP_OS_FAMILY !== 'Windows' && is_array($status) && $status['running'] === true) {
+                @proc_terminate($this->process, 9);
+            }
+        }
+
+        $this->cleanupProcess();
     }
 
     private function cleanupProcess(): void
@@ -349,7 +383,7 @@ class AsyncFuture
 
     private function cleanupFiles(): void
     {
-        foreach ([$this->inputFile, $this->outputFile, $this->workerFile] as $file) {
+        foreach ([$this->inputFile, $this->outputFile, $this->outputFile . '.tmp'] as $file) {
             if (is_file($file)) {
                 @unlink($file);
             }
@@ -358,16 +392,5 @@ class AsyncFuture
         if ($this->runDir !== null && is_dir($this->runDir)) {
             @rmdir($this->runDir);
         }
-    }
-
-    private function readPipe(int $index): string
-    {
-        if (!isset($this->pipes[$index]) || !is_resource($this->pipes[$index])) {
-            return '';
-        }
-
-        $content = stream_get_contents($this->pipes[$index]);
-
-        return $content === false ? '' : $content;
     }
 }

@@ -1,6 +1,6 @@
 # Referência de API
 
-Assinaturas completas de cada tipo público, atualizadas para a **0.3.0**. Para prosa e exemplos, siga os guias por módulo; esta página é a consulta rápida.
+Assinaturas completas de cada tipo público, atualizadas para a **0.4.0**. Para prosa e exemplos, siga os guias por módulo; esta página é a consulta rápida.
 
 ## Option&lt;T&gt;
 
@@ -64,7 +64,7 @@ Assinaturas completas de cada tipo público, atualizadas para a **0.3.0**. Para 
 
 **Pontos de entrada (todos os schemas):** `->safeParse($input): Result<T, ValidationErrorBag>` (nunca lança) e `->parse($input): T` (lança `ValidationException`). `->transform(callable): SchemaInterface`.
 
-## Erros de validação (0.3.0)
+## Erros de validação (0.4.0)
 
 Value objects Tell-Don't-Ask — **não** existem getters `path()`, `message()`, `code()`, `all()` ou `first()`.
 
@@ -110,9 +110,20 @@ Value objects Tell-Don't-Ask — **não** existem getters `path()`, `message()`,
 | `Async::setDefaultTempDir` | `setDefaultTempDir(string $tempDir): void` | Sobrescreve onde os arquivos temporários do worker são escritos. |
 | `Async::setDefaultTimeout` | `setDefaultTimeout(?float $seconds): void` | Timeout padrão por task quando `options['timeout']` é omitido. |
 | `Async::setDefaultPollInterval` | `setDefaultPollInterval(int $microseconds): void` | Intervalo de polling padrão usado ao esperar um future. |
+| `Async::setDefaultMaxInputBytes` | `setDefaultMaxInputBytes(?int $bytes): void` | Limite padrão de entrada serializada; `null` desativa. |
+| `Async::setDefaultMaxOutputBytes` | `setDefaultMaxOutputBytes(?int $bytes): void` | Limite padrão de saída serializada; `null` desativa. |
 | `AsyncFuture` | `->then(fn)`, `->catch(fn)`, `->finally(fn)` | Registra callbacks. |
 | | `->resolve()` | Bloqueia até terminar (ou timeout). |
 | | `->pending(): bool`, `->cancel()` | Checagem não bloqueante / mata o processo. |
+
+As opções de tamanho da Async são `max_input_bytes` (16 MiB por padrão),
+`max_output_bytes` (64 MiB por padrão) e `include_remote_trace` (desativado por
+padrão). Um limite pode ser `null` para uma carga confiável e explicitamente
+limitada.
+
+`Maybe\Async\Exception\PayloadTooLargeException` informa qual direção do IPC
+excedeu o limite. `TaskFailedException::remoteTrace()` fica vazio por padrão;
+ative `include_remote_trace` somente em diagnósticos confiáveis.
 
 ## Funções helper globais
 

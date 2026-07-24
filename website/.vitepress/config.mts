@@ -64,6 +64,36 @@ const guideSidebarPt = [
   }
 ]
 
+const guideSidebarEs = [
+  {
+    text: 'Introducción',
+    items: [
+      { text: 'Primeros pasos', link: '/es/guide/getting-started' },
+      { text: '¿Por qué Maybe?', link: '/es/guide/why-maybe' },
+      { text: 'Tutorial', link: '/es/guide/tutorial' }
+    ]
+  },
+  {
+    text: 'Guía',
+    items: [
+      { text: 'Option', link: '/es/guide/option' },
+      { text: 'Result', link: '/es/guide/result' },
+      { text: 'Schema', link: '/es/guide/schema' },
+      { text: 'DTO', link: '/es/guide/dto' },
+      { text: 'Async', link: '/es/guide/async' },
+      { text: 'Recetas', link: '/es/guide/recipes' },
+      { text: 'Casos de estudio', link: '/es/guide/case-studies' },
+      { text: 'Object Calisthenics', link: '/es/guide/object-calisthenics' },
+      { text: 'CodeIgniter 3', link: '/es/guide/codeigniter-3' },
+      { text: 'Migración incremental', link: '/es/guide/migration' }
+    ]
+  },
+  {
+    text: 'Referencia',
+    items: [{ text: 'Referencia de API', link: '/es/guide/api-reference' }]
+  }
+]
+
 export default defineConfig({
   title: 'Maybe for PHP',
   base: '/maybe/',
@@ -120,7 +150,7 @@ export default defineConfig({
           { text: 'Why Maybe?', link: '/guide/why-maybe' },
           { text: 'API', link: '/guide/api-reference' },
           {
-            text: 'v0.3.0',
+            text: 'v0.4.0',
             items: [
               { text: 'Changelog', link: 'https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md' },
               { text: 'Packagist', link: 'https://packagist.org/packages/gabrielalmir/maybe' }
@@ -143,7 +173,7 @@ export default defineConfig({
           { text: 'Por que Maybe?', link: '/pt/guide/why-maybe' },
           { text: 'API', link: '/pt/guide/api-reference' },
           {
-            text: 'v0.3.0',
+            text: 'v0.4.0',
             items: [
               { text: 'Changelog', link: 'https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md' },
               { text: 'Packagist', link: 'https://packagist.org/packages/gabrielalmir/maybe' }
@@ -156,6 +186,34 @@ export default defineConfig({
         lastUpdated: { text: 'Atualizado em' },
         returnToTopLabel: 'Voltar ao topo',
         darkModeSwitchLabel: 'Tema',
+      }
+    },
+    es: {
+      label: 'Español',
+      lang: 'es',
+      link: '/es/',
+      description:
+        'Lógica de negocio explícita y predecible para PHP 7.4+ — Option, Result, Schema, DTO y Async, inspirados en Rust.',
+      themeConfig: {
+        nav: [
+          { text: 'Guía', link: '/es/guide/getting-started' },
+          { text: 'Ejemplos', link: '/es/guide/recipes' },
+          { text: '¿Por qué Maybe?', link: '/es/guide/why-maybe' },
+          { text: 'API', link: '/es/guide/api-reference' },
+          {
+            text: 'v0.4.0',
+            items: [
+              { text: 'Changelog', link: 'https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md' },
+              { text: 'Packagist', link: 'https://packagist.org/packages/gabrielalmir/maybe' }
+            ]
+          }
+        ],
+        sidebar: guideSidebarEs,
+        outline: { label: 'En esta página' },
+        docFooter: { prev: 'Página anterior', next: 'Página siguiente' },
+        lastUpdated: { text: 'Actualizado el' },
+        returnToTopLabel: 'Volver arriba',
+        darkModeSwitchLabel: 'Tema'
       }
     }
   }

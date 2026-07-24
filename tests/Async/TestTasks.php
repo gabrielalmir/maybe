@@ -31,5 +31,16 @@ final class TestTasks
     {
         throw new RuntimeException('boom');
     }
-}
 
+    public static function returnLargeString(int $bytes): string
+    {
+        return str_repeat('x', $bytes);
+    }
+
+    public static function writeLargeStdout(int $bytes): string
+    {
+        fwrite(STDOUT, str_repeat('o', $bytes));
+
+        return 'done';
+    }
+}

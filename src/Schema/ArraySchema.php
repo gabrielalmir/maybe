@@ -35,7 +35,7 @@ final class ArraySchema extends AbstractSchema
             );
         }
 
-        $errors = new ValidationErrorBag();
+        $errorList = [];
         $parsed = [];
 
         foreach (array_values($input) as $index => $value) {
@@ -43,13 +43,13 @@ final class ArraySchema extends AbstractSchema
                 $parsed[] = $this->itemSchema->parse($value);
             } catch (ValidationException $e) {
                 foreach ($e->errors() as $error) {
-                    $errors = $errors->withError($error->underIndex($index));
+                    $errorList[] = $error->underIndex($index);
                 }
             }
         }
 
-        if (!$errors->isEmpty()) {
-            throw new ValidationException($errors);
+        if ($errorList !== []) {
+            throw new ValidationException(new ValidationErrorBag($errorList));
         }
 
         return $parsed;

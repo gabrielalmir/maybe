@@ -2,7 +2,12 @@
 
 ## Supported Versions
 
-The current `0.2.x` line is the supported version for security review and fixes.
+The current `0.4.x` line is the supported version for security review and fixes.
+
+Maybe supports PHP 7.4 for legacy compatibility and tests current supported PHP
+branches in CI. PHP 7.4 reached end of life in November 2022; deployments should
+prefer PHP 8.2 or newer and must keep the runtime patched by the operating-system
+provider.
 
 ## Reporting a Vulnerability
 
@@ -20,3 +25,11 @@ When reporting a concern, include:
 ## Application Security Responsibilities
 
 Maybe helps make validation, optional values, and expected business errors explicit. It does not replace application-level security controls such as authentication, authorization, output escaping, CSRF protection, SQL injection prevention, secrets management, logging, monitoring, or dependency vulnerability review.
+
+The `Async` API executes caller-provided code in a child process. Callables,
+regular expressions, `php_binary`, `autoload`, and `temp_dir` are trusted
+configuration and must not be copied directly from a request. Async IPC files
+are private to the current user and authenticated against accidental or
+cross-user tampering; this is not a sandbox for a malicious task running as the
+same operating-system user. Child processes spawned by a task are not
+guaranteed to be terminated by `cancel()` or a timeout.

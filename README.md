@@ -1,6 +1,6 @@
-# Maybe (v0.3.0)
+# Maybe (v0.4.0)
 
-📖 **Documentation:** https://gabrielalmir.github.io/maybe/ — [Why Maybe?](https://gabrielalmir.github.io/maybe/guide/why-maybe) · [Tutorial](https://gabrielalmir.github.io/maybe/guide/tutorial) · [API Reference](https://gabrielalmir.github.io/maybe/guide/api-reference)
+📖 **Documentation:** https://gabrielalmir.github.io/maybe/ — [Why Maybe?](https://gabrielalmir.github.io/maybe/guide/why-maybe) · [Tutorial](https://gabrielalmir.github.io/maybe/guide/tutorial) · [API Reference](https://gabrielalmir.github.io/maybe/guide/api-reference) · [Español](https://gabrielalmir.github.io/maybe/es/)
 
 `Maybe` is a PHP library for explicit and predictable business logic.
 
@@ -177,6 +177,8 @@ Features:
 - `Async::pool($tasks, $limit)`
 - `AsyncFuture::then()->catch()->finally()->resolve()`
 - `pending()`, `cancel()`, per-task timeout (`['timeout' => 2.5]`)
+- authenticated IPC with default input/output limits of 16 MiB / 64 MiB
+- `max_input_bytes`, `max_output_bytes`, and `include_remote_trace` options
 
 ## Functional Helpers
 
@@ -208,6 +210,8 @@ $value = await(async(static function (): int {
 - Processes are isolated (no shared memory)
 - Non-serializable resources must be recreated in the child process
 - There is process spawn overhead per task
+- Task stdout/stderr is discarded to prevent pipe back-pressure deadlocks
+- `Async` is not a same-user sandbox; callables and process configuration are trusted inputs
 
 ## Development
 

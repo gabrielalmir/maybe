@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.0]
+
+### Security and reliability
+
+- Authenticated and bounded `Async` IPC with private temporary files and safe process reaping.
+- Prevented stdout pipe deadlocks and released settled future callbacks and intermediate values.
+- Reduced large invalid-schema validation from repeated quadratic error copying to one-pass collection.
+- Added security audit coverage, dependency auditing, and PHP 7.4/8.2+ CI coverage.
+
 ## [0.3.0]
 
 Object Calisthenics pass over the library, with a matching guide so code written *with* Maybe reads the same way.

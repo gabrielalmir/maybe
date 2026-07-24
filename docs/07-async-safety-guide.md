@@ -53,6 +53,16 @@ Tasks and task arguments must be serializable. Avoid passing:
 
 Prefer passing scalar IDs, arrays, and simple values.
 
+Async IPC is authenticated and private to the current operating-system user.
+The default serialized input limit is 16 MiB and the default output limit is
+64 MiB. Override these with `max_input_bytes` and `max_output_bytes` only from
+trusted configuration; pass `null` only when the larger payload is understood
+and bounded by the application.
+
+Task stdout and stderr are intentionally discarded. Return diagnostic data as
+part of the task result instead of writing an unbounded amount to the process
+output streams.
+
 ## Timeout Recommendations
 
 Use timeouts when work may block on external systems:
@@ -64,6 +74,10 @@ $future = async(static function (string $url): string {
 ```
 
 Document what should happen if a timeout occurs: retry, show partial results, log and continue, or fail the request.
+
+`cancel()` and timeouts reap the worker process, but a task-created descendant
+process is outside the lifecycle guarantee. A task must clean up any processes,
+sockets, files, and external leases it creates.
 
 ## When to Use Async
 
