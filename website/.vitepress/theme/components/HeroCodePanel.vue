@@ -1,28 +1,30 @@
 <template>
-  <div class="code-panel" role="img" aria-label="PHP code example using Maybe's Result pipeline">
+  <figure class="code-panel" aria-labelledby="hero-code-caption">
     <div class="code-panel-bar">
       <span class="dot dot-err" />
       <span class="dot" style="background: #e6b800" />
       <span class="dot dot-ok" />
-      <span class="filename">invoice.php</span>
+      <span class="filename">customer.php</span>
     </div>
-    <pre class="code-panel-body"><code><span class="tok-kw">use</span> <span class="tok-ns">Maybe\Result\Result</span>;
+    <figcaption id="hero-code-caption" class="visually-hidden">A PHP Result pipeline that makes success and failure explicit</figcaption>
+    <pre class="code-panel-body"><code><span class="tok-kw">use</span> <span class="tok-ns">Maybe\Schema\Schema</span>;
 
-<span class="tok-var">$invoice</span> = loadUser(<span class="tok-num">10</span>)
-    -&gt;andThen(<span class="tok-kw">fn</span> (<span class="tok-type">array</span> <span class="tok-var">$user</span>) =&gt; charge(<span class="tok-var">$user</span>))
-    -&gt;map(<span class="tok-kw">fn</span> (<span class="tok-type">array</span> <span class="tok-var">$paid</span>) =&gt; <span class="tok-var">$paid</span>[<span class="tok-str">'id'</span>]);
+<span class="tok-var">$result</span> = Schema::shape([
+    <span class="tok-str">'email'</span> =&gt; Schema::string()-&gt;trimmed(),
+])-&gt;safeParse(<span class="tok-var">$payload</span>)
+    -&gt;andThen(<span class="tok-kw">fn</span> (<span class="tok-type">array</span> <span class="tok-var">$data</span>) =&gt; saveCustomer(<span class="tok-var">$data</span>));
 
-<span class="tok-var">$invoice</span>-&gt;match(
-    <span class="tok-kw">fn</span> (<span class="tok-type">string</span> <span class="tok-var">$id</span>) =&gt; <span class="tok-ok">"<span class="tok-ok-tag">Ok</span>: invoice {<span class="tok-var">$id</span>} created"</span>,
-    <span class="tok-kw">fn</span> (<span class="tok-type">string</span> <span class="tok-var">$e</span>) =&gt; <span class="tok-err">"<span class="tok-err-tag">Err</span>: {<span class="tok-var">$e</span>}"</span>
+<span class="tok-var">$result</span>-&gt;match(
+    <span class="tok-kw">fn</span> (<span class="tok-type">Customer</span> <span class="tok-var">$customer</span>) =&gt; <span class="tok-ok">"<span class="tok-ok-tag">Ok</span>: saved"</span>,
+    <span class="tok-kw">fn</span> (<span class="tok-type">mixed</span> <span class="tok-var">$error</span>) =&gt; <span class="tok-err">"<span class="tok-err-tag">Err</span>: fix input"</span>
 );</code></pre>
-  </div>
+  </figure>
 </template>
 
 <style scoped>
 .code-panel {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
@@ -74,14 +76,26 @@
   color: var(--vp-c-text-1);
 }
 
-.tok-kw { color: var(--maybe-brand-3); }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tok-kw { color: var(--maybe-code-keyword); }
 .tok-ns { color: var(--vp-c-text-2); }
-.tok-var { color: #d97757; }
-.tok-num { color: #d97757; }
-.tok-str { color: var(--maybe-ok); }
-.tok-type { color: var(--maybe-brand-1); }
-.tok-ok { color: var(--maybe-ok); }
-.tok-err { color: var(--maybe-err); }
+.tok-var { color: var(--maybe-code-variable); }
+.tok-num { color: var(--maybe-code-variable); }
+.tok-str { color: var(--maybe-code-ok); }
+.tok-type { color: var(--maybe-code-keyword); }
+.tok-ok { color: var(--maybe-code-ok); }
+.tok-err { color: var(--maybe-code-err); }
 .tok-ok-tag { font-weight: 700; }
 .tok-err-tag { font-weight: 700; }
 </style>

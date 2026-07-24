@@ -22,30 +22,21 @@ try {
 
 Both versions leave the caller with no way to know whether the customer was actually notified — and no way to distinguish "the email address was malformed" (retrying won't help) from "the SMTP relay timed out" (retrying might).
 
-**With Maybe:** validate the message before spending a network call, wrap the SMTP send in a `Result`, fall back to a secondary relay with `orElse()`, and confirm the order regardless of the email outcome:
+**With Maybe:** name each boundary and keep the caller focused on the outcome:
 
 ```php
-$sendConfirmationEmail = static function (array $message) use ($emailSchema, $primary, $secondary): Result {
-    return $emailSchema->safeParse($message)
-        ->mapErr(fn (ValidationErrorBag $errors): array => ['retryable' => false, 'reason' => $errors->summary()])
-        ->andThen(function (array $valid) use ($primary, $secondary): Result {
-            return tryCatch(fn () => $primary->send($valid['to'], $valid['subject'], $valid['body']))
-                ->mapErr(fn (\Throwable $e): string => $e->getMessage())
-                ->orElse(fn () => tryCatch(fn () => $secondary->send($valid['to'], $valid['subject'], $valid['body']))
-                    ->mapErr(fn (\Throwable $e): string => $e->getMessage()))
-                ->mapErr(fn (string $reason): array => ['retryable' => true, 'reason' => $reason]);
-        });
-};
+$emailResult = $emailSchema->safeParse($message)
+    ->andThen(static fn (array $valid): Result => sendWithFallback($valid));
 
-// The order is confirmed either way — email delivery is a side effect,
-// not a precondition for the order to exist.
 $emailResult->match(
-    fn (string $ref): string => "sent ({$ref})",
-    fn (array $error): string => $error['retryable']
+    static fn (string $ref): string => "sent ({$ref})",
+    static fn (array $error): string => $error['retryable']
         ? "queued for retry ({$error['reason']})"
-        : "rejected, needs a data fix ({$error['reason']})"
+        : "rejected: fix the input ({$error['reason']})"
 );
 ```
+
+The transport details live in `sendWithFallback()`, which can be tested independently. The page that confirms the order only has to decide what an `Ok` or an `Err` means.
 
 **Why this matters:** the error payload keeps `retryable` explicit. A malformed email address and a flaky SMTP relay are *different problems* — one needs a data fix, the other needs a retry queue — and the type keeps them from being handled identically by accident.
 
@@ -65,41 +56,19 @@ if (!$sap->post($payload)) {
 
 The real risk here isn't the error itself — it's that the order gets confirmed to the customer, is never created in SAP, and nobody notices until finance reconciliation weeks later.
 
-**With Maybe:** validate the outbound payload against SAP's expected shape *before* the network round-trip, then classify the failure by exception type — a connection problem is retryable, a business rule violation is not:
+**With Maybe:** keep validation, transport and routing as three named boundaries:
 
 ```php
-final class SapConnectionException extends \RuntimeException {} // retryable
-final class SapBusinessException extends \RuntimeException {}   // not retryable
+$sapResult = $orderSchema->safeParse($order)
+    ->andThen(static fn (array $payload): Result => postToSap($payload));
 
-$pushOrderToSap = static function (array $order) use ($orderSchema, $sap): Result {
-    return $orderSchema->safeParse($order)
-        ->mapErr(fn (ValidationErrorBag $errors): array => ['retryable' => false, 'reason' => 'invalid_payload: ' . $errors->summary()])
-        ->andThen(function (array $payload) use ($sap): Result {
-            return tryCatch(fn () => $sap->postSalesOrder($payload))
-                ->mapErr(fn (\Throwable $e): array => [
-                    'retryable' => $e instanceof SapConnectionException,
-                    'reason' => $e->getMessage(),
-                ]);
-        });
-};
-```
-
-The caller routes the outcome into two buckets instead of one undifferentiated failure log:
-
-```php
 $sapResult->match(
-    fn (string $sapDocNumber): string => "created in SAP ({$sapDocNumber})",
-    function (array $error) use ($order, &$requeued, &$manualReview): string {
-        if ($error['retryable']) {
-            $requeued[] = $order['id'];
-            return "requeued for retry ({$error['reason']})";
-        }
-
-        $manualReview[] = $order['id'];
-        return "sent to manual review ({$error['reason']})";
-    }
+    static fn (string $document): string => "created in SAP ({$document})",
+    static fn (array $error): string => routeSapFailure($order, $error)
 );
 ```
+
+`postToSap()` can classify a connection error as retryable while `routeSapFailure()` decides between retry and manual review. Neither decision is hidden inside a controller.
 
 **Why this matters:** the order is confirmed locally either way — SAP being down doesn't take checkout down with it — but a business error (unknown material, missing cost center) stops being retried forever instead of quietly failing the same way on every retry attempt.
 
@@ -111,41 +80,24 @@ Full runnable file: [`examples/scenario-sap-order-integration.php`](https://gith
 
 **The business risk.** Contract validation scattered across a controller as a chain of `if` statements lets a contract get half-saved in an invalid state, and produces error messages too unstructured for a legal/ops review screen to point at the exact offending field.
 
-**A real limitation worth knowing:** `Schema` has no built-in cross-field validation (e.g. "the end date must be after the start date") or conditional required-list checks (e.g. "these clauses must all be present"). The idiomatic fix is **not** a bigger schema API — it's chaining a plain `Result`-returning business-rule function with `andThen()` right after `safeParse()`, reusing the same `ValidationErrorBag` so both stages report through one uniform error shape:
+**A real limitation worth knowing:** `Schema` has no built-in cross-field validation (e.g. "the end date must be after the start date") or conditional required-list checks. The idiomatic fix is to add a plain business-rule function after `safeParse()`:
 
 ```php
-function checkBusinessRules(array $contract): Result
-{
-    $errors = new ValidationErrorBag();
+$result = $contractSchema->safeParse($input)
+    ->andThen('checkBusinessRules');
 
-    if ($contract['ends_at'] <= $contract['starts_at']) {
-        $errors = $errors->withError(
-            new ValidationError(Path::field('ends_at'), 'End date must be after the start date', 'contract.invalid_period')
-        );
-    }
-
-    foreach (array_diff(MANDATORY_CLAUSES, $contract['clauses']) as $clause) {
-        $errors = $errors->withError(
-            new ValidationError(Path::field('clauses'), "Missing mandatory clause: {$clause}", 'contract.missing_clause')
-        );
-    }
-
-    return $errors->isEmpty() ? Result::ok($contract) : Result::err($errors);
-}
-
-$validateContract = static function (array $input) use ($contractSchema): Result {
-    return $contractSchema->safeParse($input)->andThen('checkBusinessRules');
-};
+$result->match(
+    static fn (array $valid): string => "approved (value: {$valid['value_in_cents']} cents)",
+    static fn (ValidationErrorBag $errors): string => implode("\n", $errors->describe())
+);
 ```
 
-Because both stages return `Result<array, ValidationErrorBag>`, the caller handles structural errors (invalid tax ID format, contract value below zero) and business-rule errors (invalid date range, missing mandatory clause) through the exact same `match()`:
+Both stages return the same `Result` shape, so structural and business-rule errors share one boundary:
 
 ```php
 $result->match(
-    fn (array $valid): string => "approved (value: {$valid['value_in_cents']} cents)",
-    function (ValidationErrorBag $errors): string {
-        return implode("\n", $errors->describe());
-    }
+    static fn (array $valid): string => renderApproved($valid),
+    static fn (ValidationErrorBag $errors): string => renderErrors($errors)
 );
 ```
 

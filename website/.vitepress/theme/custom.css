@@ -1,136 +1,259 @@
-/**
- * Maybe brand tokens.
- * Primary: a refined violet (nods to PHP's own lavender, elevated).
- * Signal colors reuse the library's own vocabulary — Ok is green, Err is coral —
- * used sparingly as an accent, never as decoration.
- */
+/* Maybe's visual language is built around one real thing: an outcome that is
+ * explicit at the boundary. Violet is the product signal; green and red are
+ * reserved for the two values a Result can actually have. */
 
 :root {
-  --maybe-brand-1: #6d5ae6;
-  --maybe-brand-2: #5b47d6;
-  --maybe-brand-3: #8577ec;
-  --maybe-brand-soft: rgba(109, 90, 230, 0.14);
+  --maybe-brand-1: #5946d2;
+  --maybe-brand-2: #4d3cc0;
+  --maybe-brand-3: #7868e8;
+  --maybe-brand-soft: rgba(89, 70, 210, 0.12);
 
-  --maybe-ok: #12a150;
-  --maybe-ok-soft: rgba(18, 161, 80, 0.12);
-  --maybe-err: #e5484d;
-  --maybe-err-soft: rgba(229, 72, 77, 0.12);
+  --maybe-ok: #167844;
+  --maybe-ok-soft: rgba(22, 120, 68, 0.12);
+  --maybe-err: #b93845;
+  --maybe-err-soft: rgba(185, 56, 69, 0.12);
+  --maybe-ink: #19181e;
+  --maybe-paper: #f7f7fa;
+  --maybe-panel: #f0eff4;
+  --maybe-panel-strong: #e9e8ef;
+  --maybe-line: #dedde6;
+  --maybe-code-keyword: #4d3cc0;
+  --maybe-code-variable: #8a4318;
+  --maybe-code-ok: #075e36;
+  --maybe-code-err: #9e2535;
 
-  --maybe-mono: ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', 'Liberation Mono', monospace;
+  --maybe-display: 'Avenir Next', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --maybe-body: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --maybe-mono: 'SFMono-Regular', 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
 
   --vp-c-brand-1: var(--maybe-brand-2);
   --vp-c-brand-2: var(--maybe-brand-1);
   --vp-c-brand-3: var(--maybe-brand-3);
   --vp-c-brand-soft: var(--maybe-brand-soft);
-
   --vp-button-brand-bg: var(--maybe-brand-2);
   --vp-button-brand-hover-bg: var(--maybe-brand-1);
-  --vp-button-brand-active-bg: #4a38c2;
+  --vp-button-brand-active-bg: #4030a8;
 
-  /* Warm light theme — not another cold white/blue documentation site. */
-  --vp-c-bg: #fbfaf8;
-  --vp-c-bg-alt: #f4f2ee;
-  --vp-c-bg-soft: #efece6;
-  --vp-c-gutter: #e8e4dd;
-  --vp-c-divider: #e6e2da;
-  --vp-c-text-1: #1c1b22;
-  --vp-c-text-2: #4c4a57;
+  --vp-c-bg: var(--maybe-paper);
+  --vp-c-bg-alt: var(--maybe-panel);
+  --vp-c-bg-soft: var(--maybe-panel-strong);
+  --vp-c-gutter: var(--maybe-line);
+  --vp-c-divider: var(--maybe-line);
+  --vp-c-text-1: var(--maybe-ink);
+  --vp-c-text-2: #4d4b58;
+  --vp-c-text-3: #686672;
+  --vp-font-family-base: var(--maybe-body);
+  --vp-font-family-mono: var(--maybe-mono);
 }
 
 .dark {
-  --vp-c-bg: #131217;
-  --vp-c-bg-alt: #1a1920;
-  --vp-c-bg-soft: #201f27;
-  --vp-c-gutter: #2a2933;
-  --vp-c-divider: #2a2933;
-  /*
-   * --vp-c-text-1/2 are set unconditionally above in :root (light-mode
-   * values). Since :root and .dark target the same <html> element with
-   * equal selector specificity, whichever rule comes later in the
-   * cascade wins per custom property — so without redefining them here,
-   * the near-black light-mode text color leaks into dark mode and
-   * becomes nearly invisible against the dark background.
-   */
-  --vp-c-text-1: rgba(251, 250, 248, 0.92);
-  --vp-c-text-2: rgba(205, 201, 214, 0.7);
+  --vp-c-bg: #16151b;
+  --vp-c-bg-alt: #1e1d25;
+  --vp-c-bg-soft: #272631;
+  --vp-c-gutter: #302f3b;
+  --vp-c-divider: #302f3b;
+  --vp-c-text-1: #f3f2f7;
+  --vp-c-text-2: #c3c0cc;
+  --vp-c-text-3: #a39fac;
   --vp-c-brand-1: var(--maybe-brand-3);
-  --vp-c-brand-2: var(--maybe-brand-1);
-  --vp-button-brand-bg: var(--maybe-brand-1);
-  --vp-button-brand-hover-bg: var(--maybe-brand-3);
+  --vp-c-brand-2: #8c7cf0;
+  --vp-button-brand-bg: #6a58dc;
+  --vp-button-brand-hover-bg: #8576ed;
+  --maybe-code-keyword: #b8adff;
+  --maybe-code-variable: #f0a276;
+  --maybe-code-ok: #70d39b;
+  --maybe-code-err: #ff9aa5;
 }
 
-/* Hero: tighten the measure and give the tagline real weight instead of the default gray wall of text. */
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--maybe-body);
+}
+
+.VPNavBarTitle .title,
+.VPHero .name,
+.site-footer-name {
+  font-family: var(--maybe-display);
+  letter-spacing: -0.035em;
+}
+
+.VPNavBarTitle .title {
+  font-weight: 700;
+}
+
+.VPHero {
+  position: relative;
+}
+
+.VPHero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 10%;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(var(--maybe-brand-soft), transparent 72%);
+  pointer-events: none;
+}
+
+.VPHero .container,
+.VPHero .main,
+.VPHero .image,
+.VPHero .image-container {
+  min-width: 0;
+}
+
+.VPHero .main {
+  order: 1;
+}
+
 .VPHero .name {
-  font-family: var(--maybe-mono);
-  letter-spacing: -0.02em;
+  color: var(--maybe-brand-1);
+  font-weight: 750;
 }
 
 .VPHero .text {
-  max-width: 22ch;
+  width: min(100%, 22ch);
+  max-width: 100%;
+  font-family: var(--maybe-display);
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  font-weight: 750;
 }
 
 .VPHero .tagline {
-  max-width: 46ch;
+  width: min(100%, 48ch);
+  max-width: 100%;
+  line-height: 1.55;
 }
 
-/*
- * The default VPHero ".image" slot is sized/positioned for a small circular
- * avatar (fixed 320x320 box, large negative margins pulling it up behind the
- * heading, absolute-centered content). Our hero-image slot renders a full
- * width code panel instead, so the avatar geometry must be neutralized —
- * otherwise the panel overlaps the heading/tagline on mobile.
- */
+.VPHero .actions {
+  align-items: center;
+}
+
 .VPHero .image {
-  order: 1;
-  margin: 0 0 32px;
+  order: 2;
+  width: 100%;
+  margin: 28px 0 0;
   min-height: 0;
-}
-
-@media (min-width: 960px) {
-  .VPHero .image {
-    order: 2;
-    margin: 0;
-    flex-shrink: 0;
-    width: calc((100% / 3) * 1 - 16px);
-  }
 }
 
 .VPHero .image-container {
   position: static;
   width: 100%;
+  max-width: 520px;
   height: auto;
-  max-width: 480px;
-}
-
-@media (min-width: 960px) {
-  .VPHero .image-container {
-    display: block;
-    transform: none;
-  }
 }
 
 .VPHero .image-bg {
   display: none;
 }
 
-/* Feature cards: a thin top accent per module instead of a generic bordered box. */
+@media (min-width: 960px) {
+  .VPHero .main {
+    order: 1;
+  }
+
+  .VPHero .image {
+    order: 2;
+    width: calc((100% / 3) * 1 - 16px);
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .VPHero .image-container {
+    display: block;
+    transform: none;
+  }
+}
+
+/* Outcome rail: an understated, semantic trace that replaces generic
+ * decorative gradients. It points from input to the two real Result states. */
+.maybe-outcome-rail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 0;
+  color: var(--vp-c-text-2);
+  font-family: var(--maybe-mono);
+  font-size: 12px;
+}
+
+.maybe-outcome-rail .rail-line {
+  position: relative;
+  flex: 1;
+  max-width: 116px;
+  height: 1px;
+  background: var(--maybe-line);
+}
+
+.maybe-outcome-rail .rail-line::after {
+  content: '›';
+  position: absolute;
+  right: -2px;
+  top: -9px;
+  color: var(--maybe-brand-1);
+  font-size: 18px;
+}
+
+.maybe-outcome-rail .rail-state {
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: var(--maybe-ok-soft);
+  color: var(--maybe-ok);
+}
+
+.maybe-outcome-rail .rail-state.err {
+  background: var(--maybe-err-soft);
+  color: var(--maybe-err);
+}
+
+/* Features are navigational modules, not static marketing tiles. */
+.VPFeatures {
+  padding-top: 8px;
+}
+
 .VPFeature {
   position: relative;
   overflow: hidden;
-  border-radius: 10px !important;
+  height: 100%;
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  background: var(--vp-c-bg-alt);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--maybe-brand-3);
+  box-shadow: 0 12px 30px -22px rgba(45, 35, 120, 0.6);
+  transform: translateY(-2px);
+}
+
+.VPFeature:focus-visible,
+.VPFeature a:focus-visible,
+.site-footer a:focus-visible,
+.badge:focus-visible,
+.VPButton:focus-visible {
+  outline: 3px solid var(--maybe-brand-3);
+  outline-offset: 3px;
 }
 
 .VPFeature::before {
   content: '';
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--maybe-brand-2), var(--maybe-brand-3));
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--maybe-brand-1);
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.VPFeature:hover::before {
+.VPFeature:hover::before,
+.VPFeature:focus-within::before {
   opacity: 1;
 }
 
@@ -139,11 +262,178 @@
   background: var(--maybe-brand-soft) !important;
 }
 
-/* Inline code and API tokens get the mono treatment consistently. */
-:root {
-  --vp-font-family-mono: var(--maybe-mono);
+.maybe-secondary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 32px 0 8px;
+}
+
+.maybe-secondary-card {
+  display: block;
+  padding: 20px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--vp-c-bg);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.maybe-secondary-card:hover {
+  border-color: var(--maybe-brand-3);
+  background: var(--vp-c-bg-alt);
+}
+
+.maybe-secondary-card strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--vp-c-text-1);
+}
+
+.maybe-secondary-card span {
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Code is an interface: readable at rest, copyable without hunting for a
+ * hover target, and visually quieter than the actual outcome. */
+.vp-doc div[class*='language-'] {
+  position: relative;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-alt);
+  box-shadow: 0 14px 30px -26px rgba(20, 16, 40, 0.85);
+}
+
+.vp-doc div[class*='language-'] .lang {
+  top: 12px;
+  right: 48px;
+  color: var(--vp-c-text-3);
+  font-family: var(--maybe-mono);
+  font-size: 11px;
+}
+
+.vp-doc div[class*='language-'] .copy {
+  top: 9px;
+  right: 10px;
+  opacity: 1;
+  border-color: #4a4655;
+  background-color: var(--vp-c-bg-soft);
+}
+
+.vp-doc div[class*='language-'] .copy:hover {
+  border-color: var(--maybe-brand-3);
+  background-color: var(--maybe-brand-soft);
+}
+
+.dark .vp-doc div[class*='language-'] {
+  background: #211f29;
+}
+
+.dark .vp-doc div[class*='language-'] .copy {
+  background-color: #2b2934;
+}
+
+.vp-doc div[class*='language-'] code {
+  font-family: var(--maybe-mono);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.vp-doc [class*='language-'] code .line {
+  min-height: 1.65em;
 }
 
 code {
   font-family: var(--maybe-mono);
+}
+
+.code-panel {
+  max-width: 100%;
+  border-color: var(--vp-c-divider);
+  border-radius: 14px;
+  background: var(--vp-c-bg-alt);
+  box-shadow: 0 18px 36px -24px rgba(30, 22, 70, 0.7);
+}
+
+.code-panel-body {
+  max-width: 100%;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.code-panel:focus-within {
+  outline: 3px solid var(--maybe-brand-3);
+  outline-offset: 4px;
+}
+
+.maybe-install-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin: 32px 0 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+  background: var(--vp-c-bg-alt);
+}
+
+.maybe-install-card p {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+}
+
+.maybe-install-card code {
+  display: block;
+  margin-top: 6px;
+  color: var(--vp-c-text-1);
+  font-size: 14px;
+}
+
+.maybe-install-card a {
+  white-space: nowrap;
+}
+
+.site-footer {
+  border-top: 1px solid var(--vp-c-divider);
+  padding: 40px 24px 48px;
+  margin-top: 24px;
+}
+
+.site-footer-links a:hover {
+  color: var(--maybe-brand-1);
+}
+
+@media (max-width: 639px) {
+  .VPHero::before {
+    display: none;
+  }
+
+  .maybe-outcome-rail {
+    margin-top: 22px;
+  }
+
+  .maybe-secondary-grid,
+  .maybe-install-card {
+    grid-template-columns: 1fr;
+  }
+
+  .maybe-install-card a {
+    justify-self: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

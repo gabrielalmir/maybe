@@ -22,30 +22,21 @@ try {
 
 Nas duas versões, quem chama não tem como saber se o cliente foi realmente notificado — e não consegue distinguir "o e-mail estava malformado" (retry não ajuda) de "o relay SMTP deu timeout" (retry pode ajudar).
 
-**Com o Maybe:** valide a mensagem antes de gastar uma chamada de rede, envolva o envio SMTP em um `Result`, use `orElse()` para cair para um relay secundário, e confirme o pedido independentemente do resultado do e-mail:
+**Com o Maybe:** nomeie cada fronteira e mantenha o chamador focado no resultado:
 
 ```php
-$sendConfirmationEmail = static function (array $message) use ($emailSchema, $primary, $secondary): Result {
-    return $emailSchema->safeParse($message)
-        ->mapErr(fn (ValidationErrorBag $errors): array => ['retryable' => false, 'reason' => $errors->summary()])
-        ->andThen(function (array $valid) use ($primary, $secondary): Result {
-            return tryCatch(fn () => $primary->send($valid['to'], $valid['subject'], $valid['body']))
-                ->mapErr(fn (\Throwable $e): string => $e->getMessage())
-                ->orElse(fn () => tryCatch(fn () => $secondary->send($valid['to'], $valid['subject'], $valid['body']))
-                    ->mapErr(fn (\Throwable $e): string => $e->getMessage()))
-                ->mapErr(fn (string $reason): array => ['retryable' => true, 'reason' => $reason]);
-        });
-};
+$emailResult = $emailSchema->safeParse($message)
+    ->andThen(static fn (array $valid): Result => sendWithFallback($valid));
 
-// O pedido é confirmado de qualquer forma — o envio do e-mail é um efeito
-// colateral, não um pré-requisito para o pedido existir.
 $emailResult->match(
-    fn (string $ref): string => "enviado ({$ref})",
-    fn (array $error): string => $error['retryable']
+    static fn (string $ref): string => "enviado ({$ref})",
+    static fn (array $error): string => $error['retryable']
         ? "na fila para retry ({$error['reason']})"
-        : "rejeitado, precisa de correção de dado ({$error['reason']})"
+        : "rejeitado: corrija o input ({$error['reason']})"
 );
 ```
+
+Os detalhes de transporte ficam em `sendWithFallback()`, que pode ser testado separadamente. A página que confirma o pedido só precisa decidir o que `Ok` ou `Err` significam.
 
 **Por que isso importa:** o payload de erro mantém `retryable` explícito. Um e-mail malformado e um relay SMTP instável são *problemas diferentes* — um precisa de correção de dado, o outro precisa de fila de retry — e o tipo evita que os dois sejam tratados igual por acidente.
 
@@ -65,41 +56,19 @@ if (!$sap->post($payload)) {
 
 O risco real aqui não é o erro em si — é o pedido ser confirmado ao cliente, nunca ser criado no SAP, e ninguém perceber até a conciliação financeira, semanas depois.
 
-**Com o Maybe:** valide o payload de saída contra o formato esperado pelo SAP *antes* do round-trip de rede, depois classifique a falha pelo tipo de exceção — um problema de conexão é retryable, uma violação de regra de negócio não é:
+**Com o Maybe:** mantenha validação, transporte e roteamento como três fronteiras nomeadas:
 
 ```php
-final class SapConnectionException extends \RuntimeException {} // retryable
-final class SapBusinessException extends \RuntimeException {}   // não-retryable
+$sapResult = $orderSchema->safeParse($order)
+    ->andThen(static fn (array $payload): Result => postToSap($payload));
 
-$pushOrderToSap = static function (array $order) use ($orderSchema, $sap): Result {
-    return $orderSchema->safeParse($order)
-        ->mapErr(fn (ValidationErrorBag $errors): array => ['retryable' => false, 'reason' => 'invalid_payload: ' . $errors->summary()])
-        ->andThen(function (array $payload) use ($sap): Result {
-            return tryCatch(fn () => $sap->postSalesOrder($payload))
-                ->mapErr(fn (\Throwable $e): array => [
-                    'retryable' => $e instanceof SapConnectionException,
-                    'reason' => $e->getMessage(),
-                ]);
-        });
-};
-```
-
-Quem chama roteia o resultado para dois grupos em vez de um único log de falha indiferenciado:
-
-```php
 $sapResult->match(
-    fn (string $sapDocNumber): string => "criado no SAP ({$sapDocNumber})",
-    function (array $error) use ($order, &$requeued, &$manualReview): string {
-        if ($error['retryable']) {
-            $requeued[] = $order['id'];
-            return "reenfileirado para retry ({$error['reason']})";
-        }
-
-        $manualReview[] = $order['id'];
-        return "enviado para revisão manual ({$error['reason']})";
-    }
+    static fn (string $document): string => "criado no SAP ({$document})",
+    static fn (array $error): string => routeSapFailure($order, $error)
 );
 ```
+
+`postToSap()` classifica uma falha de conexão como retryable, enquanto `routeSapFailure()` decide entre retry e revisão manual. Nenhuma decisão fica escondida em um controller.
 
 **Por que isso importa:** o pedido é confirmado localmente de qualquer forma — o SAP fora do ar não derruba o checkout junto — mas um erro de negócio (material desconhecido, centro de custo ausente) para de ser retentado para sempre em vez de falhar silenciosamente do mesmo jeito a cada nova tentativa.
 
@@ -111,41 +80,24 @@ Arquivo executável completo: [`examples/scenario-sap-order-integration.php`](ht
 
 **O risco de negócio.** Validação de contrato espalhada em um controller como uma cadeia de `if`s permite que um contrato seja meio-salvo em estado inválido, e produz mensagens de erro pouco estruturadas demais para uma tela de revisão jurídica/operações apontar o campo exato.
 
-**Uma limitação real que vale conhecer:** `Schema` não tem validação cross-field nativa (ex.: "a data de fim deve ser depois da data de início") nem checagem de lista condicional obrigatória (ex.: "estas cláusulas devem estar todas presentes"). A correção idiomática **não é** uma API de schema maior — é encadear uma função de regra de negócio que retorna `Result` com `andThen()` logo após o `safeParse()`, reaproveitando o mesmo `ValidationErrorBag` para que os dois estágios reportem através de um único formato de erro uniforme:
+**Uma limitação real que vale conhecer:** `Schema` não tem validação cross-field nativa nem checagem de lista condicional obrigatória. A correção idiomática é adicionar uma função de regra de negócio depois do `safeParse()`:
 
 ```php
-function checkBusinessRules(array $contract): Result
-{
-    $errors = new ValidationErrorBag();
+$result = $contractSchema->safeParse($input)
+    ->andThen('checkBusinessRules');
 
-    if ($contract['ends_at'] <= $contract['starts_at']) {
-        $errors = $errors->withError(
-            new ValidationError(Path::field('ends_at'), 'End date must be after the start date', 'contract.invalid_period')
-        );
-    }
-
-    foreach (array_diff(MANDATORY_CLAUSES, $contract['clauses']) as $clause) {
-        $errors = $errors->withError(
-            new ValidationError(Path::field('clauses'), "Missing mandatory clause: {$clause}", 'contract.missing_clause')
-        );
-    }
-
-    return $errors->isEmpty() ? Result::ok($contract) : Result::err($errors);
-}
-
-$validateContract = static function (array $input) use ($contractSchema): Result {
-    return $contractSchema->safeParse($input)->andThen('checkBusinessRules');
-};
+$result->match(
+    static fn (array $valid): string => "aprovado (valor: {$valid['value_in_cents']} centavos)",
+    static fn (ValidationErrorBag $errors): string => implode("\n", $errors->describe())
+);
 ```
 
-Como os dois estágios retornam `Result<array, ValidationErrorBag>`, quem chama trata erros estruturais (formato de CNPJ inválido, valor do contrato abaixo de zero) e erros de regra de negócio (intervalo de datas inválido, cláusula obrigatória ausente) através do mesmíssimo `match()`:
+Os dois estágios retornam o mesmo `Result`, então erros estruturais e regras de negócio compartilham a mesma borda:
 
 ```php
 $result->match(
-    fn (array $valid): string => "aprovado (valor: {$valid['value_in_cents']} centavos)",
-    function (ValidationErrorBag $errors): string {
-        return implode("\n", $errors->describe());
-    }
+    static fn (array $valid): string => renderApproved($valid),
+    static fn (ValidationErrorBag $errors): string => renderErrors($errors)
 );
 ```
 
