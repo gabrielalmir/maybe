@@ -25,7 +25,7 @@ const copy = {
 } as const
 
 const t = copy[lang.value as keyof typeof copy] ?? copy['en-US']
-const base = lang.value === 'pt-BR' ? '/pt' : ''
+const base = lang.value === 'pt-BR' ? '/maybe/pt' : '/maybe'
 </script>
 
 <template>
@@ -35,8 +35,8 @@ const base = lang.value === 'pt-BR' ? '/pt' : ''
         <span class="site-footer-name">Maybe</span>
         <p class="site-footer-tagline">{{ t.tagline }}</p>
       </div>
-      <nav class="site-footer-links">
-        <a :href="`${base}/guide/getting-started`">{{ t.docs }}</a>
+      <nav class="site-footer-links" aria-label="Footer">
+        <a :href="`${base}/guide/getting-started.html`">{{ t.docs }}</a>
         <a href="https://github.com/gabrielalmir/maybe">{{ t.github }}</a>
         <a href="https://packagist.org/packages/gabrielalmir/maybe">{{ t.packagist }}</a>
         <a href="https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md">{{ t.changelog }}</a>

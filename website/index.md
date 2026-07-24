@@ -3,49 +3,66 @@ layout: home
 
 hero:
   name: Maybe
-  text: PHP without null. Errors without try/catch.
-  tagline: Option, Result, Schema, DTO and Async — typed success and error paths for PHP 7.4+, Windows and legacy codebases.
+  text: Make absence and failure explicit.
+  tagline: Option, Result, Schema and DTO for dependency-light PHP 7.4+ applications. Adopt one boundary at a time across Windows and legacy codebases.
   actions:
     - theme: brand
-      text: Get Started
+      text: Start in 5 minutes
       link: /guide/getting-started
     - theme: alt
-      text: View on GitHub
-      link: https://github.com/gabrielalmir/maybe
+      text: See a real migration
+      link: /guide/migration
 
 features:
   - icon:
       src: /icons/option.svg
     title: Option
     details: Model optional values without null checks scattered everywhere. Some/None with map, flatMap, filter and safe unwrapping.
+    link: /guide/option
+    linkText: Read Option
   - icon:
       src: /icons/result.svg
     title: Result
     details: Typed success/error flows without exceptions as control flow. Chain fallible operations with andThen and recover with orElse.
+    link: /guide/result
+    linkText: Read Result
   - icon:
       src: /icons/schema.svg
     title: Schema
     details: Zod-inspired, immutable parsing and validation. Compose strings, ints, enums, arrays and object shapes with rich error reporting.
+    link: /guide/schema
+    linkText: Read Schema
   - icon:
       src: /icons/dto.svg
     title: DTO
     details: Validated object mapping from raw input. One schema, one immutable DTO — returns a Result instead of throwing.
-  - icon:
-      src: /icons/async.svg
-    title: Async
-    details: Concurrent execution via child processes (proc_open). No extensions required — works on Windows and shared hosting.
-  - icon:
-      src: /icons/ci3.svg
-    title: CodeIgniter 3 ready
-    details: First-class helpers and global aliases for legacy CI3 apps. Adopt incrementally, one controller at a time.
+    link: /guide/dto
+    linkText: Read DTO
 ---
 
-## Start where errors already hurt
+## Start at the boundary you already have
 
-No framework coupling, no required extensions, no rewrite. Install it and adopt `Schema`, `DTO` and `Result` one boundary at a time.
+No framework coupling, no rewrite. Validate input, model a fallible service, and decide what happens at the edge.
 
-```bash
-composer require gabrielalmir/maybe
-```
+<div class="maybe-install-card">
+  <div>
+    <p>Install the core primitives</p>
+    <code>composer require gabrielalmir/maybe</code>
+  </div>
+  <a class="VPButton medium brand" href="guide/getting-started.html">Read the first steps →</a>
+</div>
 
-New here? Read [**Why Maybe?**](/guide/why-maybe) for the case against `null` and exceptions, follow the [**Tutorial**](/guide/tutorial) to build a validated flow end to end, or keep the [**API Reference**](/guide/api-reference) open while you work.
+## Use the boundary you have
+
+<div class="maybe-secondary-grid">
+  <a class="maybe-secondary-card" href="guide/async.html">
+    <strong>Need isolated concurrency?</strong>
+    <span>Run serializable work in child processes with Async, including timeouts, pools and cancellation.</span>
+  </a>
+  <a class="maybe-secondary-card" href="guide/codeigniter-3.html">
+    <strong>Maintaining a CI3 application?</strong>
+    <span>Adopt helpers and explicit outcomes one controller at a time without a rewrite.</span>
+  </a>
+</div>
+
+New here? Read [**Why Maybe?**](/guide/why-maybe) for the trade-offs, follow the [**Tutorial**](/guide/tutorial) to build a validated flow end to end, or keep the [**API Reference**](/guide/api-reference) open while you work.

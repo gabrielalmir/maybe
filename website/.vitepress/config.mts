@@ -65,7 +65,7 @@ const guideSidebarPt = [
 ]
 
 export default defineConfig({
-  title: 'Maybe',
+  title: 'Maybe for PHP',
   base: '/maybe/',
   lastUpdated: true,
   head: [
@@ -103,10 +103,6 @@ export default defineConfig({
     socialLinks: [
       { icon: 'github', link: 'https://github.com/gabrielalmir/maybe' }
     ],
-    footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © Gabriel Almir'
-    },
     editLink: {
       pattern: 'https://github.com/gabrielalmir/maybe/edit/main/website/:path'
     }
@@ -120,6 +116,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/guide/getting-started' },
+          { text: 'Examples', link: '/guide/recipes' },
           { text: 'Why Maybe?', link: '/guide/why-maybe' },
           { text: 'API', link: '/guide/api-reference' },
           {
@@ -142,6 +139,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Guia', link: '/pt/guide/getting-started' },
+          { text: 'Exemplos', link: '/pt/guide/recipes' },
           { text: 'Por que Maybe?', link: '/pt/guide/why-maybe' },
           { text: 'API', link: '/pt/guide/api-reference' },
           {
@@ -158,10 +156,6 @@ export default defineConfig({
         lastUpdated: { text: 'Atualizado em' },
         returnToTopLabel: 'Voltar ao topo',
         darkModeSwitchLabel: 'Tema',
-        footer: {
-          message: 'Publicado sob a licença MIT.',
-          copyright: 'Copyright © Gabriel Almir'
-        }
       }
     }
   }
