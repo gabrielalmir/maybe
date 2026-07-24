@@ -48,4 +48,4 @@ No framework coupling, no required extensions, no rewrite. Install it and adopt 
 composer require gabrielalmir/maybe
 ```
 
-Read the [Getting Started guide](/guide/getting-started) or jump straight to [Result](/guide/result) if error handling is what brought you here.
+New here? Read [**Why Maybe?**](/guide/why-maybe) for the case against `null` and exceptions, follow the [**Tutorial**](/guide/tutorial) to build a validated flow end to end, or keep the [**API Reference**](/guide/api-reference) open while you work.

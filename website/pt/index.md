@@ -48,4 +48,4 @@ Sem acoplamento a framework, sem extensões obrigatórias, sem reescrita. Instal
 composer require gabrielalmir/maybe
 ```
 
-Leia o [guia de Primeiros Passos](/pt/guide/getting-started) ou vá direto para [Result](/pt/guide/result) se tratamento de erros foi o que te trouxe até aqui.
+Novo por aqui? Leia [**Por que Maybe?**](/pt/guide/why-maybe) para o argumento contra `null` e exceções, siga o [**Tutorial**](/pt/guide/tutorial) para construir um fluxo validado de ponta a ponta, ou mantenha a [**Referência de API**](/pt/guide/api-reference) aberta enquanto trabalha.

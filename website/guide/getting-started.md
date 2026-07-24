@@ -52,6 +52,9 @@ The following namespaced functions are auto-loaded:
 
 ## Where to go next
 
+- [**Tutorial**](/guide/tutorial) — build a validated create-customer flow end to end
+- [Why Maybe?](/guide/why-maybe) — the case against `null` and exceptions, and how Maybe compares
+- [API Reference](/guide/api-reference) — every signature in one place
 - [Option](/guide/option) — optional values without null checks
 - [Result](/guide/result) — error handling as data
 - [Schema](/guide/schema) — validation and parsing

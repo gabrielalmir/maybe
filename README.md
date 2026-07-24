@@ -1,6 +1,6 @@
 # Maybe (v0.3.0)
 
-📖 **Documentation:** https://gabrielalmir.github.io/maybe/
+📖 **Documentation:** https://gabrielalmir.github.io/maybe/ — [Why Maybe?](https://gabrielalmir.github.io/maybe/guide/why-maybe) · [Tutorial](https://gabrielalmir.github.io/maybe/guide/tutorial) · [API Reference](https://gabrielalmir.github.io/maybe/guide/api-reference)
 
 `Maybe` is a PHP library for explicit and predictable business logic.
 
