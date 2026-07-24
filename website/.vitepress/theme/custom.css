@@ -63,6 +63,46 @@
   max-width: 46ch;
 }
 
+/*
+ * The default VPHero ".image" slot is sized/positioned for a small circular
+ * avatar (fixed 320x320 box, large negative margins pulling it up behind the
+ * heading, absolute-centered content). Our hero-image slot renders a full
+ * width code panel instead, so the avatar geometry must be neutralized —
+ * otherwise the panel overlaps the heading/tagline on mobile.
+ */
+.VPHero .image {
+  order: 1;
+  margin: 0 0 32px;
+  min-height: 0;
+}
+
+@media (min-width: 960px) {
+  .VPHero .image {
+    order: 2;
+    margin: 0;
+    flex-shrink: 0;
+    width: calc((100% / 3) * 1 - 16px);
+  }
+}
+
+.VPHero .image-container {
+  position: static;
+  width: 100%;
+  height: auto;
+  max-width: 480px;
+}
+
+@media (min-width: 960px) {
+  .VPHero .image-container {
+    display: block;
+    transform: none;
+  }
+}
+
+.VPHero .image-bg {
+  display: none;
+}
+
 /* Feature cards: a thin top accent per module instead of a generic bordered box. */
 .VPFeature {
   position: relative;
