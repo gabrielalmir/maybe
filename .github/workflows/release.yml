@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
         with:
           php-version: '7.4'
           tools: composer:v2
@@ -29,8 +29,13 @@ jobs:
       - name: Lint and tests
         run: composer qa
 
+      - name: Audit dependencies
+        run: composer audit --no-interaction
+        env:
+          COMPOSER_NO_AUDIT: 0
+
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           generate_release_notes: true
 

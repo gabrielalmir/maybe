@@ -46,6 +46,12 @@ Entry points: `MyDTO::fromArray($input): Result<MyDTO, ValidationErrorBag>` (nev
 
 `async($callable, array $args = [], array $options = [])` returns an `AsyncFuture`. `await($futureOrArray)` resolves one future or an array of futures (via `Async::all`). Combinators: `Async::all([...])`, `Async::race([...])`, `Async::pool($tasks, $limit)`. `AsyncFuture`: `->then(fn)`, `->catch(fn)`, `->finally(fn)`, `->resolve()` (blocking), `->pending()` (non-blocking check), `->cancel()`. Per-task timeout via `['timeout' => 2.5]` in `$options`.
 
+Async options also include `max_input_bytes` (16 MiB default),
+`max_output_bytes` (64 MiB default), and `include_remote_trace` (false by
+default). Set a size limit to `null` only for a trusted, explicitly bounded
+workload. `PayloadTooLargeException` identifies the exceeded direction, and
+`TaskFailedException::remoteTrace()` is empty unless the trace option is enabled.
+
 Runs each task in a **separate PHP process** via `proc_open` — no shared memory, arguments/results are serialized, no `pcntl` required (works on Windows). Use only for isolated, serializable workloads; avoid for tasks holding open DB connections or file handles across the boundary.
 
 ## Auto-loaded global helper functions
@@ -120,5 +126,6 @@ Generate code that reads well by leaning on what Maybe already gives you. These 
 - Object Calisthenics with Maybe: https://gabrielalmir.github.io/maybe/guide/object-calisthenics
 - CodeIgniter 3: https://gabrielalmir.github.io/maybe/guide/codeigniter-3
 - Incremental Migration: https://gabrielalmir.github.io/maybe/guide/migration
+- Spanish documentation: https://gabrielalmir.github.io/maybe/es/
 - Source: https://github.com/gabrielalmir/maybe
 - Changelog: https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md
