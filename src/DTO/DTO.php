@@ -7,6 +7,7 @@ namespace Maybe\DTO;
 use Maybe\Result\Result;
 use Maybe\Schema\ObjectSchema;
 use Maybe\Schema\ValidationErrorBag;
+use Maybe\Schema\ValidationException;
 
 abstract class DTO
 {
@@ -24,17 +25,11 @@ abstract class DTO
      */
     final public static function fromArray(array $input): Result
     {
-        return static::schema()
-            ->safeParse($input)
-            ->map(
-                /**
-                 * @param array<string,mixed> $validated
-                 * @return static
-                 */
-                function (array $validated) {
-                    return static::fromValidated($validated);
-                }
-            );
+        try {
+            return Result::ok(static::parse($input));
+        } catch (ValidationException $exception) {
+            return Result::err($exception->errors());
+        }
     }
 
     /**
@@ -49,4 +44,3 @@ abstract class DTO
         return static::fromValidated($validated);
     }
 }
-
