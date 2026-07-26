@@ -38,7 +38,8 @@ const guideSidebarPt = [
     items: [
       { text: 'Primeiros Passos', link: '/pt/guide/getting-started' },
       { text: 'Por que Maybe?', link: '/pt/guide/why-maybe' },
-      { text: 'Tutorial', link: '/pt/guide/tutorial' }
+      { text: 'Tutorial', link: '/pt/guide/tutorial' },
+      { text: 'Email Queue e Contratos', link: '/pt/guide/email-queue-and-contract-platform' }
     ]
   },
   {
