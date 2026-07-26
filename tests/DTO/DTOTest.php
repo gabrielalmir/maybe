@@ -6,6 +6,7 @@ use Maybe\DTO\DTO;
 use Maybe\Schema\ObjectSchema;
 use Maybe\Schema\Schema;
 use Maybe\Schema\ValidationErrorBag;
+use Maybe\Schema\ValidationException;
 use PHPUnit\Framework\Assert;
 
 it('creates dto from valid input', function (): void {
@@ -37,6 +38,24 @@ it('returns validation errors for invalid dto payload', function (): void {
     Assert::assertInstanceOf(ValidationErrorBag::class, $errors);
     Assert::assertSame(2, $errors->count());
 });
+
+it('parses validated data directly into a dto', function (): void {
+    $user = UserDTO::parse([
+        'name' => '  Ana  ',
+        'age' => 24,
+    ]);
+
+    Assert::assertSame('Ana', $user->name);
+    Assert::assertSame(24, $user->age);
+});
+
+it('throws validation exception before creating a dto from invalid data', function (): void {
+    UserDTO::parse([
+        'name' => 'Ana',
+        'age' => 17,
+        'admin' => true,
+    ]);
+})->throws(ValidationException::class);
 
 final class UserDTO extends DTO
 {
