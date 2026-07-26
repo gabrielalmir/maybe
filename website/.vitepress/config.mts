@@ -6,7 +6,8 @@ const guideSidebarEn = [
     items: [
       { text: 'Getting Started', link: '/guide/getting-started' },
       { text: 'Why Maybe?', link: '/guide/why-maybe' },
-      { text: 'Tutorial', link: '/guide/tutorial' }
+      { text: 'Tutorial', link: '/guide/tutorial' },
+      { text: 'Email Queue and Contracts', link: '/guide/email-queue-and-contract-platform' }
     ]
   },
   {
@@ -38,7 +39,8 @@ const guideSidebarPt = [
     items: [
       { text: 'Primeiros Passos', link: '/pt/guide/getting-started' },
       { text: 'Por que Maybe?', link: '/pt/guide/why-maybe' },
-      { text: 'Tutorial', link: '/pt/guide/tutorial' }
+      { text: 'Tutorial', link: '/pt/guide/tutorial' },
+      { text: 'Email Queue e Contratos', link: '/pt/guide/email-queue-and-contract-platform' }
     ]
   },
   {
@@ -70,7 +72,8 @@ const guideSidebarEs = [
     items: [
       { text: 'Primeros pasos', link: '/es/guide/getting-started' },
       { text: '¿Por qué Maybe?', link: '/es/guide/why-maybe' },
-      { text: 'Tutorial', link: '/es/guide/tutorial' }
+      { text: 'Tutorial', link: '/es/guide/tutorial' },
+      { text: 'Cola de emails y contratos', link: '/es/guide/email-queue-and-contract-platform' }
     ]
   },
   {
