@@ -24,6 +24,7 @@ New users in corporate or legacy environments should start with `Schema`, `DTO`,
 - [Anti-Patterns](docs/05-anti-patterns.md)
 - [Incremental Migration](docs/06-incremental-migration.md)
 - [Async Safety Guide](docs/07-async-safety-guide.md)
+- [Tutorial: Email Queue no CI3 e assinatura de contratos no Laravel](docs/08-email-queue-and-contract-platform.md)
 
 ## Requirements
 
