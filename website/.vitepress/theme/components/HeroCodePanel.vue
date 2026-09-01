@@ -1,23 +1,44 @@
+<script setup lang="ts">
+import { useData } from 'vitepress'
+import { data as heroCode } from '../data/heroCode.data'
+
+const { lang } = useData()
+
+// Only the rail is translated; the PHP snippet itself needs no translation.
+const labels = lang.value === 'pt-BR'
+  ? { input: 'entrada', result: 'Result', ok: 'Ok', err: 'Err' }
+  : { input: 'input', result: 'Result', ok: 'Ok', err: 'Err' }
+</script>
+
 <template>
   <figure class="code-panel" aria-labelledby="hero-code-caption">
-    <div class="code-panel-bar">
-      <span class="dot dot-err" />
-      <span class="dot" style="background: #e6b800" />
-      <span class="dot dot-ok" />
-      <span class="filename">customer.php</span>
+    <!-- A plain filename label, not a window title bar. The three traffic-light
+         dots that used to sit here were fake macOS chrome, and they spent the
+         reserved Ok/Err colours on decoration. -->
+    <figcaption class="code-panel-file">customer.php</figcaption>
+
+    <!-- Highlighted at build time by Shiki, the same highlighter and themes
+         every other code block on this site uses. `vp-code` is what VitePress's
+         two theme-swap rules key off, so it has to be on an ancestor of the
+         spans. The HTML is build-time constant, never user input. -->
+    <div class="code-panel-body vp-code" v-html="heroCode.html" />
+
+    <div
+      class="code-panel-outcome"
+      role="img"
+      :aria-label="`${labels.input} → ${labels.result} → ${labels.ok} / ${labels.err}`"
+    >
+      <span class="outcome-label">{{ labels.input }}</span>
+      <span class="outcome-line" aria-hidden="true" />
+      <span class="outcome-label">{{ labels.result }}</span>
+      <span class="outcome-line" aria-hidden="true" />
+      <span class="outcome-state">{{ labels.ok }}</span>
+      <span class="outcome-state err">{{ labels.err }}</span>
     </div>
-    <figcaption id="hero-code-caption" class="visually-hidden">A PHP Result pipeline that makes success and failure explicit</figcaption>
-    <pre class="code-panel-body"><code><span class="tok-kw">use</span> <span class="tok-ns">Maybe\Schema\Schema</span>;
 
-<span class="tok-var">$result</span> = Schema::shape([
-    <span class="tok-str">'email'</span> =&gt; Schema::string()-&gt;trimmed(),
-])-&gt;safeParse(<span class="tok-var">$payload</span>)
-    -&gt;andThen(<span class="tok-kw">fn</span> (<span class="tok-type">array</span> <span class="tok-var">$data</span>) =&gt; saveCustomer(<span class="tok-var">$data</span>));
-
-<span class="tok-var">$result</span>-&gt;match(
-    <span class="tok-kw">fn</span> (<span class="tok-type">Customer</span> <span class="tok-var">$customer</span>) =&gt; <span class="tok-ok">"<span class="tok-ok-tag">Ok</span>: saved"</span>,
-    <span class="tok-kw">fn</span> (<span class="tok-type">mixed</span> <span class="tok-var">$error</span>) =&gt; <span class="tok-err">"<span class="tok-err-tag">Err</span>: fix input"</span>
-);</code></pre>
+    <span id="hero-code-caption" class="visually-hidden">
+      A PHP Result pipeline that makes success and failure explicit
+    </span>
   </figure>
 </template>
 
@@ -26,54 +47,83 @@
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--vp-c-divider);
-  background: var(--vp-c-bg-alt);
-  box-shadow: 0 12px 32px -12px rgba(20, 18, 30, 0.25);
+  border-radius: var(--maybe-radius-lg);
+  background: var(--maybe-surface-1);
+  box-shadow: var(--maybe-shadow-3);
 }
 
-.code-panel-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: var(--vp-c-bg-soft);
+.code-panel-file {
+  padding: 12px 16px;
   border-bottom: 1px solid var(--vp-c-divider);
-}
-
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--vp-c-divider);
-}
-
-.dot-err {
-  background: var(--maybe-err);
-  opacity: 0.75;
-}
-
-.dot-ok {
-  background: var(--maybe-ok);
-  opacity: 0.75;
-}
-
-.filename {
-  margin-left: 8px;
   font-family: var(--maybe-mono);
   font-size: 12px;
-  color: var(--vp-c-text-2);
+  color: var(--vp-c-text-3);
+  text-align: left;
 }
 
 .code-panel-body {
-  margin: 0;
-  padding: 18px 16px;
-  font-family: var(--maybe-mono);
-  font-size: 13px;
-  line-height: 1.7;
+  padding: 16px;
   overflow-x: auto;
-  color: var(--vp-c-text-1);
+  /* Below 960px VPHero centres its container and a <pre> would inherit that,
+     indenting every line of PHP off its own left margin. */
+  text-align: left;
+}
+
+.code-panel-body :deep(pre) {
+  margin: 0;
+  background: transparent;
+}
+
+.code-panel-body :deep(code) {
+  font-family: var(--maybe-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.code-panel-outcome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--vp-c-divider);
+  background: var(--maybe-surface-2);
+  font-family: var(--maybe-mono);
+  font-size: 11px;
+}
+
+.outcome-label {
+  color: var(--vp-c-text-2);
+}
+
+.outcome-line {
+  position: relative;
+  flex: 1;
+  height: 1px;
+  background: var(--vp-c-divider);
+}
+
+.outcome-line::after {
+  content: '›';
+  position: absolute;
+  right: -2px;
+  top: -9px;
+  color: var(--maybe-brand-1);
+  font-size: 16px;
+}
+
+/* The only place green and red are allowed: the two values a Result holds. */
+.outcome-state {
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--maybe-ok-soft);
+  color: var(--maybe-ok);
+}
+
+.outcome-state.err {
+  background: var(--maybe-err-soft);
+  color: var(--maybe-err);
 }
 
 .visually-hidden {
@@ -87,15 +137,4 @@
   white-space: nowrap;
   border: 0;
 }
-
-.tok-kw { color: var(--maybe-code-keyword); }
-.tok-ns { color: var(--vp-c-text-2); }
-.tok-var { color: var(--maybe-code-variable); }
-.tok-num { color: var(--maybe-code-variable); }
-.tok-str { color: var(--maybe-code-ok); }
-.tok-type { color: var(--maybe-code-keyword); }
-.tok-ok { color: var(--maybe-code-ok); }
-.tok-err { color: var(--maybe-code-err); }
-.tok-ok-tag { font-weight: 700; }
-.tok-err-tag { font-weight: 700; }
 </style>

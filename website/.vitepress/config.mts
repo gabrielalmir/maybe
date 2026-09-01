@@ -60,40 +60,7 @@ const guideSidebarPt = [
   },
   {
     text: 'Referência',
-    items: [
-      { text: 'Referência de API', link: '/pt/guide/api-reference' }
-    ]
-  }
-]
-
-const guideSidebarEs = [
-  {
-    text: 'Introducción',
-    items: [
-      { text: 'Primeros pasos', link: '/es/guide/getting-started' },
-      { text: '¿Por qué Maybe?', link: '/es/guide/why-maybe' },
-      { text: 'Tutorial', link: '/es/guide/tutorial' },
-      { text: 'Cola de emails y contratos', link: '/es/guide/email-queue-and-contract-platform' }
-    ]
-  },
-  {
-    text: 'Guía',
-    items: [
-      { text: 'Option', link: '/es/guide/option' },
-      { text: 'Result', link: '/es/guide/result' },
-      { text: 'Schema', link: '/es/guide/schema' },
-      { text: 'DTO', link: '/es/guide/dto' },
-      { text: 'Async', link: '/es/guide/async' },
-      { text: 'Recetas', link: '/es/guide/recipes' },
-      { text: 'Casos de estudio', link: '/es/guide/case-studies' },
-      { text: 'Object Calisthenics', link: '/es/guide/object-calisthenics' },
-      { text: 'CodeIgniter 3', link: '/es/guide/codeigniter-3' },
-      { text: 'Migración incremental', link: '/es/guide/migration' }
-    ]
-  },
-  {
-    text: 'Referencia',
-    items: [{ text: 'Referencia de API', link: '/es/guide/api-reference' }]
+    items: [{ text: 'Referência de API', link: '/pt/guide/api-reference' }]
   }
 ]
 
@@ -103,13 +70,18 @@ export default defineConfig({
   lastUpdated: true,
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/maybe/favicon.svg' }],
+    // Preload only the latin subsets actually used by en/pt/es. Without this the
+    // display face is discovered only after CSS parses, which is exactly the
+    // delay that shows up as a swap on the hero headline.
+    ['link', { rel: 'preload', as: 'font', type: 'font/woff2', href: '/maybe/fonts/archivo-var-latin.woff2', crossorigin: '' }],
+    ['link', { rel: 'preload', as: 'font', type: 'font/woff2', href: '/maybe/fonts/jetbrains-mono-var-latin.woff2', crossorigin: '' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'Maybe — Explicit, predictable business logic for PHP' }],
+    ['meta', { property: 'og:title', content: 'Maybe. PHP without null, errors without try/catch.' }],
     [
       'meta',
       {
         property: 'og:description',
-        content: 'Option, Result, Schema, DTO and Async for PHP 7.4+ — typed success and error paths, no exceptions as control flow.'
+        content: 'Option, Result, Schema, DTO and Async for PHP 7.4+. Typed success and error paths, no exceptions as control flow.'
       }
     ],
     ['meta', { property: 'og:url', content: 'https://gabrielalmir.github.io/maybe/' }],
@@ -117,12 +89,12 @@ export default defineConfig({
     ['meta', { property: 'og:image:width', content: '1200' }],
     ['meta', { property: 'og:image:height', content: '630' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'Maybe — Explicit, predictable business logic for PHP' }],
+    ['meta', { name: 'twitter:title', content: 'Maybe. PHP without null, errors without try/catch.' }],
     [
       'meta',
       {
         name: 'twitter:description',
-        content: 'Option, Result, Schema, DTO and Async for PHP 7.4+ — typed success and error paths, no exceptions as control flow.'
+        content: 'Option, Result, Schema, DTO and Async for PHP 7.4+. Typed success and error paths, no exceptions as control flow.'
       }
     ],
     ['meta', { name: 'twitter:image', content: 'https://gabrielalmir.github.io/maybe/og-image.png' }],
@@ -133,9 +105,7 @@ export default defineConfig({
   themeConfig: {
     logo: '/logo.svg',
     search: { provider: 'local' },
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/gabrielalmir/maybe' }
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/gabrielalmir/maybe' }],
     editLink: {
       pattern: 'https://github.com/gabrielalmir/maybe/edit/main/website/:path'
     }
@@ -145,7 +115,7 @@ export default defineConfig({
       label: 'English',
       lang: 'en-US',
       description:
-        'Explicit, predictable business logic for PHP 7.4+ — Option, Result, Schema, DTO and Async, inspired by Rust.',
+        'Explicit, predictable business logic for PHP 7.4+. Option, Result, Schema, DTO and Async, inspired by Rust.',
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/guide/getting-started' },
@@ -168,7 +138,7 @@ export default defineConfig({
       lang: 'pt-BR',
       link: '/pt/',
       description:
-        'Lógica de negócio explícita e previsível para PHP 7.4+ — Option, Result, Schema, DTO e Async, inspirados em Rust.',
+        'Lógica de negócio explícita e previsível para PHP 7.4+. Option, Result, Schema, DTO e Async, inspirados em Rust.',
       themeConfig: {
         nav: [
           { text: 'Guia', link: '/pt/guide/getting-started' },
@@ -188,34 +158,6 @@ export default defineConfig({
         docFooter: { prev: 'Página anterior', next: 'Próxima página' },
         lastUpdated: { text: 'Atualizado em' },
         returnToTopLabel: 'Voltar ao topo',
-        darkModeSwitchLabel: 'Tema',
-      }
-    },
-    es: {
-      label: 'Español',
-      lang: 'es',
-      link: '/es/',
-      description:
-        'Lógica de negocio explícita y predecible para PHP 7.4+ — Option, Result, Schema, DTO y Async, inspirados en Rust.',
-      themeConfig: {
-        nav: [
-          { text: 'Guía', link: '/es/guide/getting-started' },
-          { text: 'Ejemplos', link: '/es/guide/recipes' },
-          { text: '¿Por qué Maybe?', link: '/es/guide/why-maybe' },
-          { text: 'API', link: '/es/guide/api-reference' },
-          {
-            text: 'v0.4.0',
-            items: [
-              { text: 'Changelog', link: 'https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md' },
-              { text: 'Packagist', link: 'https://packagist.org/packages/gabrielalmir/maybe' }
-            ]
-          }
-        ],
-        sidebar: guideSidebarEs,
-        outline: { label: 'En esta página' },
-        docFooter: { prev: 'Página anterior', next: 'Página siguiente' },
-        lastUpdated: { text: 'Actualizado el' },
-        returnToTopLabel: 'Volver arriba',
         darkModeSwitchLabel: 'Tema'
       }
     }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useData } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 
 const { lang } = useData()
 
@@ -7,8 +7,6 @@ const copy = {
   'en-US': {
     tagline: 'Explicit, predictable business logic for legacy-friendly PHP.',
     docs: 'Documentation',
-    github: 'GitHub',
-    packagist: 'Packagist',
     changelog: 'Changelog',
     license: 'MIT License',
     made: 'Built for PHP 7.4+ teams who want typed success and error paths.'
@@ -16,16 +14,19 @@ const copy = {
   'pt-BR': {
     tagline: 'Lógica de negócio explícita e previsível para PHP com foco em legado.',
     docs: 'Documentação',
-    github: 'GitHub',
-    packagist: 'Packagist',
     changelog: 'Changelog',
     license: 'Licença MIT',
     made: 'Construído para times PHP 7.4+ que querem caminhos de sucesso e erro tipados.'
   }
 } as const
 
+// Keys must match the `lang` each locale declares in config.mts.
 const t = copy[lang.value as keyof typeof copy] ?? copy['en-US']
-const base = lang.value === 'pt-BR' ? '/maybe/pt' : '/maybe'
+
+// Locale prefix only; withBase() supplies `/maybe/`, so nothing here breaks if
+// the site's base ever changes.
+const prefix = lang.value === 'pt-BR' ? '/pt' : ''
+const docsHref = withBase(`${prefix}/guide/getting-started.html`)
 </script>
 
 <template>
@@ -36,9 +37,9 @@ const base = lang.value === 'pt-BR' ? '/maybe/pt' : '/maybe'
         <p class="site-footer-tagline">{{ t.tagline }}</p>
       </div>
       <nav class="site-footer-links" aria-label="Footer">
-        <a :href="`${base}/guide/getting-started.html`">{{ t.docs }}</a>
-        <a href="https://github.com/gabrielalmir/maybe">{{ t.github }}</a>
-        <a href="https://packagist.org/packages/gabrielalmir/maybe">{{ t.packagist }}</a>
+        <a :href="docsHref">{{ t.docs }}</a>
+        <a href="https://github.com/gabrielalmir/maybe">GitHub</a>
+        <a href="https://packagist.org/packages/gabrielalmir/maybe">Packagist</a>
         <a href="https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md">{{ t.changelog }}</a>
         <a href="https://github.com/gabrielalmir/maybe/blob/main/LICENSE">{{ t.license }}</a>
       </nav>

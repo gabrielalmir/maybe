@@ -1,0 +1,36 @@
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--maybe-body);
+}
+
+code {
+  font-family: var(--maybe-mono);
+  /* JetBrains Mono ligates -> into an arrow and => into a double arrow. On a
+     docs site people copy this syntax literally, so show the real characters. */
+  font-variant-ligatures: none;
+}
+
+/* One shared focus ring for every interactive surface in the theme. */
+.VPFeature:focus-visible,
+.VPFeature a:focus-visible,
+.site-footer a:focus-visible,
+.badge:focus-visible,
+.VPButton:focus-visible {
+  outline: 3px solid var(--maybe-brand-3);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
