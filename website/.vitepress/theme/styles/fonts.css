@@ -1,0 +1,86 @@
+/* Self-hosted so the site makes no third-party request and the display face can
+ * be preloaded. The URLs hardcode the `/maybe/` base from .vitepress/config.mts
+ * because these live in public/, a relative path would be content-hashed by
+ * Vite and could then never be named in a <link rel="preload">. If `base` ever
+ * changes, these four URLs and the preload in config.mts change with it.
+ *
+ * latin covers English, Portuguese and Spanish outright: every accent those
+ * three need (ã ç é í ñ õ ú ¿ ¡) lives in U+00C0-U+00FF. latin-ext is carried as
+ * cheap insurance and, having its own unicode-range, is only ever fetched by a
+ * page that actually needs it.
+ */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/maybe/fonts/archivo-var-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/maybe/fonts/archivo-var-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/maybe/fonts/jetbrains-mono-var-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/maybe/fonts/jetbrains-mono-var-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Metric-matched fallbacks, so the swap from local font to webfont does not
+ * reflow the hero headline.
+ *
+ * Measured from the shipped woff2 (fontTools): Archivo upm 1000, hhea
+ * ascent 878 / descent -210 / gap 0, mean lowercase advance 0.5202em;
+ * JetBrains Mono upm 1000, ascent 1020 / descent -300 / gap 0, advance 0.6000em.
+ *
+ * The fallback side is tuned against Segoe UI (advance 0.5107em) and Consolas
+ * (advance 0.5498em), the Windows faces that head each stack below, and the
+ * platform this library explicitly targets. size-adjust is chosen to match mean
+ * advance width, since horizontal fit is what makes a headline rewrap; the
+ * ascent/descent overrides are then divided by that same factor because they
+ * are resolved against the already-adjusted em.
+ */
+
+@font-face {
+  font-family: 'Archivo Fallback';
+  src: local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+  size-adjust: 101.9%;
+  ascent-override: 86.2%;
+  descent-override: 20.62%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  src: local('Consolas'), local('Menlo'), local('DejaVu Sans Mono');
+  size-adjust: 109.1%;
+  ascent-override: 93.47%;
+  descent-override: 27.49%;
+  line-gap-override: 0%;
+}

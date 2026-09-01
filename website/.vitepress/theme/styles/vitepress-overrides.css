@@ -1,0 +1,408 @@
+.VPNavBarTitle .title,
+.VPHero .name,
+.site-footer-name {
+  font-family: var(--maybe-display);
+  letter-spacing: -0.035em;
+}
+
+.VPNavBarTitle .title {
+  font-weight: 700;
+}
+
+.VPHero {
+  position: relative;
+  /* Own stacking context, so ::after can sit at z-index -1 behind the hero
+     content instead of escaping upward behind .VPContent's background. */
+  isolation: isolate;
+}
+
+/* VitePress pads the hero with nav-height + 80px, which lands at 144px and
+   floats the content a sixth of the way down the viewport. Cap it so the hero
+   reads as the top of the page rather than as a layout bug. */
+@media (min-width: 640px) {
+  .VPHero {
+    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 28px);
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHero {
+    padding-top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 32px);
+  }
+}
+
+/* VitePress centres the hero below 960px. Left-aligned keeps the editorial
+   voice on small screens and matches the code panel, which is left-aligned. */
+@media (max-width: 959px) {
+  /* The class is doubled on purpose. VitePress centres with
+     `.VPHero.has-image .container[data-v-*]`, and that compiled attribute
+     selector makes it (0,4,0); a plain `.VPHero.has-image .container` is
+     (0,3,0) and loses. Doubling ties the specificity, and this file is
+     imported after the default theme, so the tie resolves here. */
+  .VPHero.has-image.has-image .container {
+    text-align: left;
+  }
+
+  /* VitePress centres these with `margin: 0 auto` and `justify-content: center`
+     at (0,4,0). The label needs it undone explicitly because giving it
+     `display: block` is what makes that auto margin bite in the first place. */
+  .VPHero.has-image.has-image .name,
+  .VPHero.has-image.has-image .text,
+  .VPHero.has-image.has-image .tagline {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .VPHero.has-image.has-image .actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Entry cascade. Justification: hierarchy. It teaches the reading order once,
+   on first paint: label, claim, qualification, action, proof.
+   Guarded on no-preference rather than relying on the global reduce block, so
+   under reduced motion the rule is never emitted at all and the content is
+   simply born visible. Only opacity and transform, both compositor-friendly. */
+@media (prefers-reduced-motion: no-preference) {
+  .VPHero .name,
+  .VPHero .text,
+  .VPHero .tagline,
+  .VPHero .actions,
+  .VPHero .hero-install,
+  .VPHero .image {
+    animation: maybe-hero-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .VPHero .name { animation-delay: 0s; }
+  .VPHero .text { animation-delay: 0.06s; }
+  .VPHero .tagline { animation-delay: 0.12s; }
+  .VPHero .actions { animation-delay: 0.18s; }
+  .VPHero .hero-install { animation-delay: 0.24s; }
+  .VPHero .image { animation-delay: 0.3s; }
+}
+
+@keyframes maybe-hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Editorial backdrop. The two gradient layers are not decoration, they are the
+ * contrast guarantee, washing the raster back to the page background exactly
+ * where hero text sits, so the AA ratios hold in both themes. Two stacked
+ * opaque gradients rather than mask-composite: universal support, no -webkit-
+ * branch, and this masking is load-bearing.
+ *
+ * Theme switches on the .dark class, never prefers-color-scheme: VitePress
+ * persists the reader's choice in localStorage, so a light-OS visitor who picks
+ * dark would otherwise get a light backdrop behind dark chrome. */
+.VPHero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center right;
+  /* one entry per background layer: two masks, two grid rules, the raster */
+  background-size: cover, cover, 64px 64px, 64px 64px, cover;
+  /* First declaration is the WebP fallback for engines without image-set(). */
+  background-image:
+    linear-gradient(to bottom, transparent 0%, transparent 58%, var(--vp-c-bg) 100%),
+    linear-gradient(96deg, var(--vp-c-bg) 0%, var(--vp-c-bg) 46%, transparent 78%),
+    linear-gradient(to right, var(--vp-c-divider) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--vp-c-divider) 1px, transparent 1px),
+    url('../assets/hero-backdrop-light.webp');
+  background-image:
+    linear-gradient(to bottom, transparent 0%, transparent 58%, var(--vp-c-bg) 100%),
+    linear-gradient(96deg, var(--vp-c-bg) 0%, var(--vp-c-bg) 46%, transparent 78%),
+    linear-gradient(to right, var(--vp-c-divider) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--vp-c-divider) 1px, transparent 1px),
+    image-set(
+      url('../assets/hero-backdrop-light.avif') type('image/avif'),
+      url('../assets/hero-backdrop-light.webp') type('image/webp')
+    );
+}
+
+.dark .VPHero::after {
+  background-image:
+    linear-gradient(to bottom, transparent 0%, transparent 58%, var(--vp-c-bg) 100%),
+    linear-gradient(96deg, var(--vp-c-bg) 0%, var(--vp-c-bg) 46%, transparent 78%),
+    linear-gradient(to right, var(--vp-c-divider) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--vp-c-divider) 1px, transparent 1px),
+    url('../assets/hero-backdrop-dark.webp');
+  background-image:
+    linear-gradient(to bottom, transparent 0%, transparent 58%, var(--vp-c-bg) 100%),
+    linear-gradient(96deg, var(--vp-c-bg) 0%, var(--vp-c-bg) 46%, transparent 78%),
+    linear-gradient(to right, var(--vp-c-divider) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--vp-c-divider) 1px, transparent 1px),
+    image-set(
+      url('../assets/hero-backdrop-dark.avif') type('image/avif'),
+      url('../assets/hero-backdrop-dark.webp') type('image/webp')
+    );
+}
+
+/* Below 960px the hero stacks and text runs full width, so a horizontal wash
+   has nothing left to stay clear of, bring the texture in from the top. */
+@media (max-width: 959px) {
+  .VPHero::after {
+    background-position: top center;
+    background-size: 220% auto;
+  }
+}
+
+.VPHero .container,
+.VPHero .main,
+.VPHero .image,
+.VPHero .image-container {
+  min-width: 0;
+}
+
+.VPHero .main {
+  order: 1;
+}
+
+/* Editorial hero hierarchy: a quiet label, the brand as a deck, then the claim
+ * at display size. VitePress sizes .name and .text identically at 32/48/56px
+ * and caps both at max-width 392px/576px across three breakpoints, so every one
+ * of those has to be answered here or the headline jumps at 640 and 960. The
+ * selectors below are (0,2,0), the same specificity as VPHero.vue's compiled
+ * `.text[data-v-*]`, and win on import order, theme CSS loads after the
+ * default theme in index.ts. Anything added here must keep that shape. */
+/* The brand label, not a second headline. It occupies the hero's single
+   permitted eyebrow slot, so no separate eyebrow element is added. */
+.VPHero .name {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  margin-bottom: var(--maybe-space-4);
+  color: var(--maybe-brand-1);
+  font-family: var(--maybe-mono);
+  font-size: var(--maybe-fs-eyebrow);
+  line-height: 1.4;
+  letter-spacing: var(--maybe-track-eyebrow);
+  font-weight: 600;
+}
+
+.VPHero .text {
+  width: auto;
+  max-width: min(100%, 26ch);
+  font-family: var(--maybe-display);
+  font-size: var(--maybe-fs-display);
+  letter-spacing: var(--maybe-track-display);
+  line-height: var(--maybe-lead-display);
+  font-weight: 750;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.VPHero .tagline {
+  width: auto;
+  max-width: min(100%, 46ch);
+  padding-top: var(--maybe-space-4);
+  font-size: var(--maybe-fs-lead);
+  line-height: var(--maybe-lead-lead);
+  font-weight: 450;
+}
+
+/* VitePress restates .name/.text sizes and the tagline at both breakpoints;
+ * restate the fluid values at equal specificity so nothing snaps back. */
+@media (min-width: 640px) {
+  .VPHero .text {
+    max-width: min(100%, 26ch);
+  }
+
+  .VPHero .text {
+    font-size: var(--maybe-fs-display);
+    line-height: var(--maybe-lead-display);
+  }
+
+  .VPHero .tagline {
+    max-width: min(100%, 46ch);
+    font-size: var(--maybe-fs-lead);
+    line-height: var(--maybe-lead-lead);
+  }
+}
+
+@media (min-width: 960px) {
+  .VPHero .text {
+    font-size: var(--maybe-fs-display);
+    line-height: var(--maybe-lead-display);
+  }
+
+  .VPHero .tagline {
+    font-size: var(--maybe-fs-lead);
+    line-height: var(--maybe-lead-lead);
+  }
+}
+
+.VPHero .actions {
+  align-items: center;
+}
+
+.VPHero .image {
+  order: 2;
+  width: 100%;
+  margin: 28px 0 0;
+  min-height: 0;
+}
+
+.VPHero .image-container {
+  position: static;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+
+.VPHero .image-bg {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .VPHero .main {
+    order: 1;
+  }
+
+  /* VitePress sets flex-grow:1 on .image, which lets the code panel eat into the
+     text column and push the headline onto a third line. Pin the panel's share
+     so the display type gets the width it was scaled for. */
+  .VPHero .image {
+    order: 2;
+    width: auto;
+    flex: 0 1 42%;
+    max-width: 460px;
+    margin: 0;
+  }
+
+  .VPHero .image-container {
+    max-width: 100%;
+  }
+
+  .VPHero .main {
+    width: auto;
+    flex: 1 1 58%;
+    min-width: 0;
+  }
+
+  .VPHero .image-container {
+    display: block;
+    transform: none;
+  }
+}
+
+/* Features are navigational modules, not static marketing tiles. */
+.VPFeatures {
+  padding-top: 8px;
+}
+
+.VPFeature {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  background: var(--vp-c-bg-alt);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--maybe-brand-3);
+  box-shadow: 0 12px 30px -22px rgba(45, 35, 120, 0.6);
+  transform: translateY(-2px);
+}
+
+
+.VPFeature::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--maybe-brand-1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.VPFeature:hover::before,
+.VPFeature:focus-within::before {
+  opacity: 1;
+}
+
+.VPFeature .icon {
+  border-radius: 8px !important;
+  background: var(--maybe-brand-soft) !important;
+}
+
+/* Code is an interface: readable at rest, copyable without hunting for a
+ * hover target, and visually quieter than the actual outcome. */
+.vp-doc div[class*='language-'] {
+  position: relative;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-alt);
+  box-shadow: 0 14px 30px -26px rgba(20, 16, 40, 0.85);
+}
+
+.vp-doc div[class*='language-'] .lang {
+  top: 12px;
+  right: 48px;
+  color: var(--vp-c-text-3);
+  font-family: var(--maybe-mono);
+  font-size: 11px;
+}
+
+.vp-doc div[class*='language-'] .copy {
+  top: 9px;
+  right: 10px;
+  opacity: 1;
+  border-color: #4a4655;
+  background-color: var(--vp-c-bg-soft);
+}
+
+.vp-doc div[class*='language-'] .copy:hover {
+  border-color: var(--maybe-brand-3);
+  background-color: var(--maybe-brand-soft);
+}
+
+.dark .vp-doc div[class*='language-'] {
+  background: #211f29;
+}
+
+.dark .vp-doc div[class*='language-'] .copy {
+  background-color: #2b2934;
+}
+
+.vp-doc div[class*='language-'] code {
+  font-family: var(--maybe-mono);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.vp-doc [class*='language-'] code .line {
+  min-height: 1.65em;
+}
+
+@media (max-width: 639px) {
+  .VPHero::before {
+    display: none;
+  }
+
+  /* At 375px the texture cannot register as texture, only as noise behind the
+     headline. display:none on a pseudo-element also skips the fetch entirely,
+     so phones pay zero bytes for it. */
+  .VPHero::after {
+    display: none;
+  }
+}
+
+@media print {
+  .VPHero::before,
+  .VPHero::after {
+    display: none;
+  }
+}

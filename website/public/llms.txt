@@ -126,6 +126,6 @@ Generate code that reads well by leaning on what Maybe already gives you. These 
 - Object Calisthenics with Maybe: https://gabrielalmir.github.io/maybe/guide/object-calisthenics
 - CodeIgniter 3: https://gabrielalmir.github.io/maybe/guide/codeigniter-3
 - Incremental Migration: https://gabrielalmir.github.io/maybe/guide/migration
-- Spanish documentation: https://gabrielalmir.github.io/maybe/es/
+- Portuguese documentation: https://gabrielalmir.github.io/maybe/pt/
 - Source: https://github.com/gabrielalmir/maybe
 - Changelog: https://github.com/gabrielalmir/maybe/blob/main/CHANGELOG.md

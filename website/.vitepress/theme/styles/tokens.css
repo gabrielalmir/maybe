@@ -1,0 +1,159 @@
+/* Maybe's visual language is built around one real thing: an outcome that is
+ * explicit at the boundary. Violet is the product signal; green and red are
+ * reserved for the two values a Result can actually have. */
+
+:root {
+  --maybe-brand-1: #5946d2;
+  --maybe-brand-2: #4d3cc0;
+  --maybe-brand-3: #7868e8;
+  --maybe-brand-soft: rgba(89, 70, 210, 0.12);
+
+  --maybe-ok: #167844;
+  --maybe-ok-soft: rgba(22, 120, 68, 0.12);
+  --maybe-err: #b93845;
+  --maybe-err-soft: rgba(185, 56, 69, 0.12);
+  --maybe-ink: #19181e;
+  --maybe-paper: #f7f7fa;
+  --maybe-panel: #f0eff4;
+  --maybe-panel-strong: #e9e8ef;
+  --maybe-line: #dedde6;
+  --maybe-code-keyword: #4d3cc0;
+  --maybe-code-variable: #8a4318;
+  --maybe-code-ok: #075e36;
+  --maybe-code-err: #9e2535;
+
+  --maybe-display: 'Archivo', 'Archivo Fallback', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --maybe-body: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --maybe-mono: 'JetBrains Mono', 'JetBrains Mono Fallback', 'SFMono-Regular', 'Cascadia Code', Menlo, Consolas, monospace;
+
+  --vp-c-brand-1: var(--maybe-brand-2);
+  --vp-c-brand-2: var(--maybe-brand-1);
+  --vp-c-brand-3: var(--maybe-brand-3);
+  --vp-c-brand-soft: var(--maybe-brand-soft);
+  --vp-button-brand-bg: var(--maybe-brand-2);
+  --vp-button-brand-hover-bg: var(--maybe-brand-1);
+  --vp-button-brand-active-bg: #4030a8;
+
+  --vp-c-bg: var(--maybe-paper);
+  --vp-c-bg-alt: var(--maybe-panel);
+  --vp-c-bg-soft: var(--maybe-panel-strong);
+  --vp-c-gutter: var(--maybe-line);
+  --vp-c-divider: var(--maybe-line);
+  --vp-c-text-1: var(--maybe-ink);
+  --vp-c-text-2: #4d4b58;
+  --vp-c-text-3: #686672;
+  --vp-font-family-base: var(--maybe-body);
+  --vp-font-family-mono: var(--maybe-mono);
+}
+
+.dark {
+  --vp-c-bg: #16151b;
+  --vp-c-bg-alt: #1e1d25;
+  --vp-c-bg-soft: #272631;
+  --vp-c-gutter: #302f3b;
+  --vp-c-divider: #302f3b;
+  --vp-c-text-1: #f3f2f7;
+  --vp-c-text-2: #c3c0cc;
+  --vp-c-text-3: #a39fac;
+  --vp-c-brand-1: var(--maybe-brand-3);
+  --vp-c-brand-2: #8c7cf0;
+  --vp-button-brand-bg: #6a58dc;
+  --vp-button-brand-hover-bg: #8576ed;
+  --maybe-code-keyword: #b8adff;
+  --maybe-code-variable: #f0a276;
+  --maybe-code-ok: #70d39b;
+  --maybe-code-err: #ff9aa5;
+}
+
+/* Editorial layer.
+ *
+ * Two groups with deliberately different rules:
+ *
+ * - Dimensional tokens (rhythm, type scale, radii) carry no theme meaning, so
+ *   they are declared once and inherit into `.dark`. Duplicating them would
+ *   only create two places to drift apart.
+ * - Tonal tokens (surfaces, shadows, semantic-on-invert) MUST be redefined in
+ *   `.dark` below. Omitting one there is the exact mistake that once leaked a
+ *   light-mode value into dark mode.
+ *
+ * Surfaces are named by tier, not by colour: `surface-2` is *darker* than the
+ * page in light mode and *lighter* than it in dark mode. Naming the role rather
+ * than the value is what keeps the dark block a swap instead of a rewrite.
+ */
+
+:root {
+  --maybe-space-1: 4px;
+  --maybe-space-2: 8px;
+  --maybe-space-3: 12px;
+  --maybe-space-4: 16px;
+  --maybe-space-5: 20px;
+  --maybe-space-6: 24px;
+  --maybe-space-7: 32px;
+  --maybe-space-8: 40px;
+  --maybe-space-9: 56px;
+  --maybe-space-10: 72px;
+  --maybe-space-11: 96px;
+  --maybe-space-12: 128px;
+
+  --maybe-section-y: clamp(64px, 9vw, 128px);
+  --maybe-section-y-tight: clamp(40px, 5vw, 72px);
+  --maybe-gutter: clamp(20px, 5vw, 64px);
+  --maybe-measure: 1152px;
+  --maybe-measure-prose: 64ch;
+
+  --maybe-fs-eyebrow: 0.75rem;
+  --maybe-fs-body: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --maybe-fs-lead: clamp(1.0625rem, 0.96rem + 0.5vw, 1.375rem);
+  --maybe-fs-h3: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  --maybe-fs-h2: clamp(2rem, 1.35rem + 3.1vw, 3.5rem);
+  /* 6-word headline, so the sane band is 36-56px, not 84px. The longest line
+     ("Errors without try/catch.") has to fit the ~730px text column on one
+     line, which caps Archivo at about 56px. */
+  /* Solved against the narrowest two-column case, not the widest: at 960px the
+     text column is ~450px, which caps the longest line at ~34px. The slope
+     then reaches the 48px ceiling at 1440px. */
+  --maybe-fs-display: clamp(2rem, 0.375rem + 2.92vw, 3rem);
+
+  --maybe-track-display: -0.045em;
+  --maybe-track-h2: -0.03em;
+  --maybe-track-eyebrow: 0.14em;
+  --maybe-lead-display: 0.96;
+  --maybe-lead-h2: 1.06;
+  --maybe-lead-lead: 1.5;
+  --maybe-lead-body: 1.65;
+
+  --maybe-radius-sm: 8px;
+  --maybe-radius-md: 12px;
+  --maybe-radius-lg: 16px;
+  --maybe-radius-xl: 24px;
+  --maybe-ring: 3px solid var(--maybe-brand-3);
+
+  /* tonal, mirrored in .dark */
+  --maybe-surface-0: #f7f7fa;
+  --maybe-surface-1: #ffffff;
+  --maybe-surface-2: #efeef4;
+  --maybe-surface-invert: #181139;
+  --maybe-surface-invert-ink: #f3f1fb;
+  --maybe-surface-invert-line: rgba(255, 255, 255, 0.14);
+  --maybe-ok-on-invert: #7ce0a8;
+  --maybe-err-on-invert: #ffb3ba;
+  --maybe-brand-on-invert: #a99cf5;
+  --maybe-shadow-1: 0 1px 2px rgba(25, 20, 60, 0.06), 0 8px 20px -16px rgba(25, 20, 60, 0.5);
+  --maybe-shadow-2: 0 18px 36px -24px rgba(30, 22, 70, 0.7);
+  --maybe-shadow-3: 0 24px 60px -40px rgba(45, 35, 120, 0.55);
+}
+
+.dark {
+  --maybe-surface-0: #16151b;
+  --maybe-surface-1: #1e1d25;
+  --maybe-surface-2: #1c1b23;
+  --maybe-surface-invert: #241c4e;
+  --maybe-surface-invert-ink: #f3f2f7;
+  --maybe-surface-invert-line: rgba(255, 255, 255, 0.12);
+  --maybe-ok-on-invert: #7ce0a8;
+  --maybe-err-on-invert: #ffb3ba;
+  --maybe-brand-on-invert: #a99cf5;
+  --maybe-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -16px rgba(0, 0, 0, 0.8);
+  --maybe-shadow-2: 0 18px 36px -24px rgba(0, 0, 0, 0.85);
+  --maybe-shadow-3: 0 24px 60px -40px rgba(0, 0, 0, 0.9);
+}

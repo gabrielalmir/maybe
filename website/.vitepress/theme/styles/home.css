@@ -1,0 +1,72 @@
+
+.code-panel:focus-within {
+  outline: var(--maybe-ring);
+  outline-offset: 4px;
+}
+
+.site-footer {
+  border-top: 1px solid var(--vp-c-divider);
+  padding: 40px 24px 48px;
+  margin-top: 24px;
+}
+
+.site-footer-links a:hover {
+  color: var(--maybe-brand-1);
+}
+
+/* Band system.
+ *
+ * Anything mounted into a VitePress home slot is already full-bleed: the 1152px
+ * constraint lives on VPHomeContent's inner .container, which wraps only the
+ * markdown body. So a band sets its own background across the full width and
+ * re-establishes the measure on an inner element. Do NOT reach for
+ * `width: 100vw; margin-left: calc(50% - 50vw)`, 100vw counts the scrollbar and
+ * would knock every band ~7px out of line with the hero above it.
+ */
+.maybe-band {
+  padding-block: var(--maybe-section-y);
+}
+
+.maybe-band--tight {
+  padding-block: var(--maybe-section-y-tight);
+}
+
+.maybe-band--sunken {
+  background: var(--maybe-surface-2);
+}
+
+.maybe-band__inner {
+  max-width: var(--maybe-measure);
+  margin-inline: auto;
+  padding-inline: var(--maybe-gutter);
+}
+
+.maybe-eyebrow {
+  margin: 0 0 var(--maybe-space-3);
+  font-family: var(--maybe-mono);
+  font-size: var(--maybe-fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--maybe-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--maybe-brand-1);
+}
+
+.maybe-band__title {
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--maybe-display);
+  font-size: var(--maybe-fs-h2);
+  font-weight: 700;
+  letter-spacing: var(--maybe-track-h2);
+  line-height: var(--maybe-lead-h2);
+  text-wrap: balance;
+  color: var(--vp-c-text-1);
+}
+
+.maybe-band__lead {
+  margin: var(--maybe-space-5) 0 0;
+  max-width: 62ch;
+  font-size: var(--maybe-fs-lead);
+  line-height: var(--maybe-lead-lead);
+  color: var(--vp-c-text-2);
+}
