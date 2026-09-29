@@ -1,14 +1,25 @@
 {
-  "name": "php-7.4-env",
+  "name": "maybe-php-7.4",
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+  "remoteUser": "vscode",
   "customizations": {
     "vscode": {
       "extensions": [
-        "bmewburn.vscode-intelephense-client"
-      ]
+        "bmewburn.vscode-intelephense-client",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "php.validate.executablePath": "/usr/local/bin/php"
+      }
     }
   },
-  "postCreateCommand": "composer install"
+  "postCreateCommand": "composer install && npm --prefix website ci"
 }
